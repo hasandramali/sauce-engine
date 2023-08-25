@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+    branches:
+      - "master"
+
+jobs:
+  build-windows-i386:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build windows-i386
+      run: |
+        git submodule init && git submodule update
+        mkdir installdir
+        ./waf.bat configure -T debug --build-game=tf
+        ./waf.bat build
+        ./waf.bat install --destdir=D:/a/source-engine/source-engine/installdir/
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+          name: compiled
+          path: installdir/
