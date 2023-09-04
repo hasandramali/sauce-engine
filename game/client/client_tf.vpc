@@ -13,7 +13,7 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	".\hl2;.\tf;$SRCDIR\game\shared\Multiplayer;$SRCDIR\game\shared\tf;$BASE"
+		$AdditionalIncludeDirectories	".\hl2;.\tf;.\tf\vgui;$SRCDIR\game\shared\Multiplayer;$SRCDIR\game\shared\tf;$BASE"
 		$PreprocessorDefinitions		"$BASE;TF_MOD_CLIENT"
 	}
 }
@@ -46,12 +46,23 @@ $Project "Client (TF)"
 
 		$Folder	"TF"
 		{
+			$File	"$SRCDIR\game\shared\tf\achievements_tf.cpp"
 			$File	"$SRCDIR\game\shared\tf\baseobject_shared.cpp"
 			$File	"$SRCDIR\game\shared\tf\baseobject_shared.h"
 			$File	"tf\c_baseobject.cpp"
 			$File	"tf\c_baseobject.h"
+			$File	"tf\c_func_respawnroom.cpp"
+			$File	"tf\c_func_capture_zone.cpp"
+			$File	"tf\c_obj_dispenser.cpp"
+			$File	"tf\c_obj_dispenser.h"
+			$File	"tf\c_obj_sapper.cpp"
+			$File	"tf\c_obj_sapper.h"
 			$File	"tf\c_obj_sentrygun.cpp"
 			$File	"tf\c_obj_sentrygun.h"
+			$File	"tf\c_obj_teleporter.cpp"
+			$File	"tf\c_obj_teleporter.h"
+			$File	"tf\c_playerattachedmodel.cpp"
+			$File	"tf\c_playerattachedmodel.h"
 			$File	"tf\c_tf_ammo_pack.cpp"
 			$File	"tf\c_tf_fx.cpp"
 			$File	"tf\c_tf_fx.h"
