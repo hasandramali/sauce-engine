@@ -1151,14 +1151,12 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 	void StripChar(char *szBuffer, const char cWhiteSpace )
 	{
-		char *src, *dst;
 
-		for (src = dst = szBuffer; *src != '\0'; src++)
+		while ( char *pSpace = strchr( szBuffer, cWhiteSpace ) )
 		{
-			*dst = *src;
-			if (*dst != cWhiteSpace) dst++;
+			char *pNextChar = pSpace + sizeof(char);
+			V_strcpy( pSpace, pNextChar );
 		}
-		*dst = '\0';
 	}
 
 	void CMultiplayRules::GetNextLevelName( char *pszNextMap, int bufsize, bool bRandom /* = false */ )

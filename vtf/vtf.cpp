@@ -27,10 +27,7 @@ BEGIN_BYTESWAP_DATADESC( VTFFileBaseHeader_t )
 	DEFINE_FIELD( headerSize, FIELD_INTEGER ),
 END_DATADESC()
 
-BEGIN_BYTESWAP_DATADESC( VTFFileHeaderV7_1_t )
-	DEFINE_ARRAY( fileTypeString, FIELD_CHARACTER, 4 ),
-	DEFINE_ARRAY( version, FIELD_INTEGER, 2 ),
-	DEFINE_FIELD( headerSize, FIELD_INTEGER ),
+BEGIN_BYTESWAP_DATADESC_( VTFFileHeaderV7_1_t, VTFFileBaseHeader_t )
 	DEFINE_FIELD( width, FIELD_SHORT ),
 	DEFINE_FIELD( height, FIELD_SHORT ),
 	DEFINE_FIELD( flags, FIELD_INTEGER ),
@@ -45,43 +42,15 @@ BEGIN_BYTESWAP_DATADESC( VTFFileHeaderV7_1_t )
 	DEFINE_FIELD( lowResImageHeight, FIELD_CHARACTER ),
 END_DATADESC()
 
-BEGIN_BYTESWAP_DATADESC( VTFFileHeaderV7_2_t )
-	DEFINE_ARRAY( fileTypeString, FIELD_CHARACTER, 4 ),
-	DEFINE_ARRAY( version, FIELD_INTEGER, 2 ),
-	DEFINE_FIELD( headerSize, FIELD_INTEGER ),
-	DEFINE_FIELD( width, FIELD_SHORT ),
-	DEFINE_FIELD( height, FIELD_SHORT ),
-	DEFINE_FIELD( flags, FIELD_INTEGER ),
-	DEFINE_FIELD( numFrames, FIELD_SHORT ),
-	DEFINE_FIELD( startFrame, FIELD_SHORT ),
-	DEFINE_FIELD( reflectivity, FIELD_VECTOR ),
-	DEFINE_FIELD( bumpScale, FIELD_FLOAT ),
-	DEFINE_FIELD( imageFormat, FIELD_INTEGER ),
-	DEFINE_FIELD( numMipLevels, FIELD_CHARACTER ),
-	DEFINE_FIELD( lowResImageFormat, FIELD_INTEGER ),
-	DEFINE_FIELD( lowResImageWidth, FIELD_CHARACTER ),
-	DEFINE_FIELD( lowResImageHeight, FIELD_CHARACTER ),
+BEGIN_BYTESWAP_DATADESC_( VTFFileHeaderV7_2_t, VTFFileHeaderV7_1_t )
 	DEFINE_FIELD( depth, FIELD_SHORT ),
 END_DATADESC()
 
-BEGIN_BYTESWAP_DATADESC( VTFFileHeaderV7_3_t )
-	DEFINE_ARRAY( fileTypeString, FIELD_CHARACTER, 4 ),
-	DEFINE_ARRAY( version, FIELD_INTEGER, 2 ),
-	DEFINE_FIELD( headerSize, FIELD_INTEGER ),
-	DEFINE_FIELD( width, FIELD_SHORT ),
-	DEFINE_FIELD( height, FIELD_SHORT ),
-	DEFINE_FIELD( flags, FIELD_INTEGER ),
-	DEFINE_FIELD( numFrames, FIELD_SHORT ),
-	DEFINE_FIELD( startFrame, FIELD_SHORT ),
-	DEFINE_FIELD( reflectivity, FIELD_VECTOR ),
-	DEFINE_FIELD( bumpScale, FIELD_FLOAT ),
-	DEFINE_FIELD( imageFormat, FIELD_INTEGER ),
-	DEFINE_FIELD( numMipLevels, FIELD_CHARACTER ),
-	DEFINE_FIELD( lowResImageFormat, FIELD_INTEGER ),
-	DEFINE_FIELD( lowResImageWidth, FIELD_CHARACTER ),
-	DEFINE_FIELD( lowResImageHeight, FIELD_CHARACTER ),
-	DEFINE_FIELD( depth, FIELD_SHORT ),
+BEGIN_BYTESWAP_DATADESC_( VTFFileHeaderV7_3_t, VTFFileHeaderV7_2_t )
 	DEFINE_FIELD( numResources, FIELD_INTEGER ),
+END_DATADESC()
+
+BEGIN_BYTESWAP_DATADESC_( VTFFileHeader_t, VTFFileHeaderV7_2_t )
 END_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC_( VTFFileHeaderX360_t, VTFFileBaseHeader_t )
@@ -934,11 +903,23 @@ static bool ReadHeaderFromBufferPastBaseHeader( CUtlBuffer &buf, VTFFileHeader_t
 	else if ( header.version[1] == 2 )
 	{
 		buf.Get( pBuf, sizeof(VTFFileHeaderV7_2_t) - sizeof(VTFFileBaseHeader_t) );
+
+		#if defined( _X360 ) || defined (POSIX)
+			// read 15 dummy bytes to be properly positioned with 7.2 PC data
+			byte dummy[15];
+			buf.Get( dummy, 15 );
+		#endif
 	}
 	else if ( header.version[1] == 1 || header.version[1] == 0 )
 	{
 		// previous version 7.0 or 7.1
 		buf.Get( pBuf, sizeof(VTFFileHeaderV7_1_t) - sizeof(VTFFileBaseHeader_t) );
+
+		#if defined( _X360 ) || defined (POSIX)
+			// read a dummy byte to be properly positioned with 7.0/1 PC data
+			byte dummy;
+			buf.Get( &dummy, 1 );
+		#endif
 	}
 	else
 	{

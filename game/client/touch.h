@@ -161,7 +161,6 @@ class CTouchControls
 {
 public:
 	void Init( );
-	void LevelInit( );
 	void Shutdown( );
 
 	void Paint( );

@@ -376,7 +376,7 @@ static vgui::MouseCode ButtonCodeToMouseCode( ButtonCode_t buttonCode )
 //-----------------------------------------------------------------------------
 bool InputHandleInputEvent( const InputEvent_t &event )
 {
-	switch( event.m_nType )
+	switch( event.m_nType & 0xFFFF )
 	{
 	case IE_ButtonPressed:
 		{
@@ -428,10 +428,9 @@ bool InputHandleInputEvent( const InputEvent_t &event )
 	case IE_FingerDown:
 		{
 			int w,h,x,y; g_MatSystemSurface.GetScreenSize(w, h);
-			float _x, _y;
-			memcpy( &_x, &event.m_nData2, sizeof(_x) );
-			memcpy( &_y, &event.m_nData3, sizeof(_y) );
-			x = w*_x; y = h*_y;
+			uint data = (uint)event.m_nData;
+			x = w*((double)((data >> 16) & 0xFFFF) / 0xFFFF);
+			y = h*((double)(data & 0xFFFF) / 0xFFFF);
 			g_pIInput->UpdateCursorPosInternal( x, y );
 			g_pIInput->SetMouseCodeState( MOUSE_LEFT, vgui::BUTTON_PRESSED );
 			g_pIInput->InternalMousePressed( MOUSE_LEFT );
@@ -440,10 +439,9 @@ bool InputHandleInputEvent( const InputEvent_t &event )
 	case IE_FingerUp:
 		{
 			int w,h,x,y; g_MatSystemSurface.GetScreenSize(w, h);
-			float _x, _y;
-			memcpy( &_x, &event.m_nData2, sizeof(_x) );
-			memcpy( &_y, &event.m_nData3, sizeof(_y) );
-			x = w*_x; y = h*_y;
+			uint data = (uint)event.m_nData;
+			x = w*((double)((data >> 16) & 0xFFFF) / 0xFFFF);
+			y = h*((double)(data & 0xFFFF) / 0xFFFF);
 			g_pIInput->UpdateCursorPosInternal( x, y );
 			g_pIInput->SetMouseCodeState( MOUSE_LEFT, vgui::BUTTON_RELEASED );
 			g_pIInput->InternalMouseReleased( MOUSE_LEFT );
@@ -452,10 +450,9 @@ bool InputHandleInputEvent( const InputEvent_t &event )
 	case IE_FingerMotion:
 		{
 			int w,h,x,y; g_MatSystemSurface.GetScreenSize(w, h);
-			float _x, _y;
-			memcpy( &_x, &event.m_nData2, sizeof(_x) );
-			memcpy( &_y, &event.m_nData3, sizeof(_y) );
-			x = w*_x; y = h*_y;
+			uint data = (uint)event.m_nData;
+			x = w*((double)((data >> 16) & 0xFFFF) / 0xFFFF);
+			y = h*((double)(data & 0xFFFF) / 0xFFFF);
 			g_pIInput->InternalCursorMoved( x, y );
 		}
 		return true;

@@ -48,9 +48,6 @@ void CInputSystem::InitializeTouch( void )
 	// abort startup if user requests no touch
 	if ( CommandLine()->FindParm("-notouch") ) return;
 
-	memset( m_touchAccumX, 0, sizeof(m_touchAccumX) );
-	memset( m_touchAccumY, 0, sizeof(m_touchAccumY) );
-
 	m_bJoystickInitialized = true;
 	SDL_AddEventWatch(TouchSDLWatcher, this);
 }
@@ -64,35 +61,20 @@ void CInputSystem::ShutdownTouch()
 	m_bTouchInitialized = false;
 }
 
-bool CInputSystem::GetTouchAccumulators( int fingerId, float &dx, float &dy )
-{
-	dx = m_touchAccumX[fingerId];
-	dy = m_touchAccumY[fingerId];
-
-	m_touchAccumX[fingerId] = m_touchAccumY[fingerId] = 0.f;
-
-	return true;
-}
-
 void CInputSystem::FingerEvent(int eventType, int fingerId, float x, float y, float dx, float dy)
 {
-	if( fingerId >= TOUCH_FINGER_MAX_COUNT )
-		return;
+	// Shit, but should work with arm/x86
 
-	if( eventType == IE_FingerUp )
-	{
-		m_touchAccumX[fingerId] = 0.f;
-		m_touchAccumY[fingerId] = 0.f;
-	}
-	else
-	{
-		m_touchAccumX[fingerId] += dx;
-		m_touchAccumY[fingerId] += dy;
-	}
+	int data0 = fingerId << 16 | eventType;
+	int _x = (int)((double)x*0xFFFF);
+	int _y = (int)((double)y*0xFFFF);
+	int data1 = _x << 16 | (_y & 0xFFFF);
 
-	int _x,_y;
-	memcpy( &_x, &x, sizeof(float) );
-	memcpy( &_y, &y, sizeof(float) );
-	PostEvent(eventType, m_nLastSampleTick, fingerId, _x, _y);
+	union{int i;float f;} ifconv;
+	ifconv.f = dx;
+	int _dx = ifconv.i;
+	ifconv.f = dy;
+	int _dy = ifconv.i;
+
+	PostEvent(data0, m_nLastSampleTick, data1, _dx, _dy);
 }
-

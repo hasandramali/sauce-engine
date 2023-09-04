@@ -401,3 +401,4 @@ void CWeaponIFMBaseCamera::DrawCrosshair( void )
 
 #endif // CLIENT_DLL
 
+

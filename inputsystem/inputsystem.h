@@ -44,8 +44,6 @@
 
 #include "steam/steam_api.h"
 
-#define TOUCH_FINGER_MAX_COUNT 10
-
 //-----------------------------------------------------------------------------
 // Implementation of the input system
 //-----------------------------------------------------------------------------
@@ -103,7 +101,7 @@ public:
 	virtual void *GetHapticsInterfaceAddress() const { return NULL;}	
 #endif
 	bool GetRawMouseAccumulators( int& accumX, int& accumY );
-	virtual bool GetTouchAccumulators( int fingerId, float &dx, float &dy );
+	bool GetTouchAccumulators( InputEventType_t &event, int &fingerId, int& accumX, int& accumY );
 
 	virtual void SetConsoleTextMode( bool bConsoleTextMode );
 
@@ -460,7 +458,8 @@ public:
 	bool m_bRawInputSupported;
 	int	 m_mouseRawAccumX, m_mouseRawAccumY;
 
-	float m_touchAccumX[TOUCH_FINGER_MAX_COUNT], m_touchAccumY[TOUCH_FINGER_MAX_COUNT];
+	InputEventType_t m_touchAccumEvent;
+	int m_touchAccumFingerId, m_touchAccumX, m_touchAccumY;
 
 	// For the 'SleepUntilInput' feature
 	HANDLE m_hEvent;
