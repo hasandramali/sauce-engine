@@ -18,10 +18,11 @@ jobs:
       run: |
         git submodule init && git submodule update
         mkdir installdir
-        ./waf.bat configure -T debug
+        ./waf.bat configure -T debug --build-game=cstrike
         ./waf.bat build
+        ./waf.bat install --destdir=D:/a/source-engine/source-engine/installdir/
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
           name: compiled
-          path: build/
+          path: installdir/
