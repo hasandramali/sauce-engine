@@ -20,9 +20,8 @@ jobs:
         mkdir installdir
         ./waf.bat configure -T debug
         ./waf.bat build
-        ./waf.bat install --destdir=./installdir/
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
           name: compiled
-          path: installdir/
+          path: build/
