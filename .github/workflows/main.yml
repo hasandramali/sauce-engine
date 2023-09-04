@@ -20,6 +20,7 @@ jobs:
         mkdir installdir
         ./waf.bat configure -T debug
         ./waf.bat build
+        mkdir installdir
         ./waf.bat install --destdir=D:/a/source-engine/source-engine/installdir/
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
