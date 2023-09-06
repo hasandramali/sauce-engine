@@ -16,6 +16,8 @@
 // This is used, unless overridden in the registry
 #define VALVE_MASTER_ADDRESS "207.173.177.10:27011"
 
+#define HB_TIMEOUT 15
+
 #define PORT_RCON			27015	// defualt RCON port, TCP
 #define	PORT_MASTER			27011	// Default master port, UDP
 #define PORT_CLIENT			27005	// Default client port, UDP/TCP
@@ -28,6 +30,8 @@
 #define PORT_RPT_LISTEN		27036	// RPT connection listener (remote perf testing) port, TCP
 #endif // ENABLE_RPT
 #define PORT_REPLAY			27040	// Default replay port
+
+#define PORT_SERVERSINFO	27069	// Default matchmaking port
 
 // out of band message id bytes
 
@@ -80,16 +84,15 @@
 
 
 // A user is requesting the list of master servers, auth servers, and titan dir servers from the Client Master server
-#define A2M_GETMASTERSERVERS	'v' // + byte (type of request, TYPE_CLIENT_MASTER or TYPE_SERVER_MASTER)
 
 // Master server list response
-#define M2A_MASTERSERVERS		'w'	// + byte type + 6 byte IP/Port List
 
-#define A2M_GETACTIVEMODS		'x' // + string Request to master to provide mod statistics ( current usage ).  "1" for first mod.
-
-#define M2A_ACTIVEMODS			'y' // response:  modname\r\nusers\r\nservers
-
-#define M2M_MSG					'z' // Master peering message
+#define S2M_GETCHALLENGE		'w' // + dword challenge
+#define S2M_HEARTBEAT			'y'
+#define S2M_SHUTDOWN			'z' // Master peering message
+#define M2S_CHALLENGE			'x' // + dword challenge
+#define M2C_QUERY				'J'	// request module from master
+#define C2M_CLIENTQUERY			'1' // New style server query
 
 // SERVER TO CLIENT/ANY
 
