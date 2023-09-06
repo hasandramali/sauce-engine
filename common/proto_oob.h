@@ -82,7 +82,6 @@
 
 #define A2A_CUSTOM				't'	// a custom command, follow by a string for 3rd party tools
 
-
 // A user is requesting the list of master servers, auth servers, and titan dir servers from the Client Master server
 
 // Master server list response
@@ -94,6 +93,8 @@
 #define M2C_QUERY				'J'	// request module from master
 #define C2M_CLIENTQUERY			'1' // New style server query
 
+#define C2S_INFOREQUEST			'v'
+#define S2C_INFOREPLY			'K'
 // SERVER TO CLIENT/ANY
 
 // Client connection is initiated by requesting a challenge value
@@ -108,9 +109,6 @@
 // Request for detailed server/rule information.
 #define S2A_INFO_SRC			'I' // + Address, hostname, map, gamedir, gamedescription, active players, maxplayers, protocol
 #define S2A_INFO_GOLDSRC		'm' // Reserved for use by goldsrc servers
-
-#define S2M_GETFILE				'J'	// request module from master
-#define M2S_SENDFILE			'K'	// send module to server
 
 #define S2C_REDIRECT			'L'	// + IP x.x.x.x:port, redirect client to other server/proxy 
 
@@ -135,8 +133,6 @@
 #define S2A_PING2REPLY			'Z' // new-style minimalist ping reply
 
 #define A2S_KEY_STRING		"Source Engine Query" // required postfix to a A2S_INFO query
-
-#define A2M_GET_SERVERS_BATCH2	'1' // New style server query
 
 #define A2M_GETACTIVEMODS2		'2' // New style mod info query
 
