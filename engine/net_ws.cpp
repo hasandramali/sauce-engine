@@ -2989,8 +2989,6 @@ void NET_RunFrame( double flRealtime )
 
 #endif // SWDS
 
-	master->RunFrame();
-
 #ifdef _X360
 	if ( net_logserver.GetInt() )
 	{
