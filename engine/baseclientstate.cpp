@@ -876,8 +876,6 @@ bool CBaseClientState::ProcessConnectionlessPacket( netpacket_t *packet )
 
 	Assert( packet );
 
-	master->ProcessConnectionlessPacket( packet );
-
 	bf_read &msg = packet->message;	// handy shortcut 
 
 	int c = msg.ReadByte();
