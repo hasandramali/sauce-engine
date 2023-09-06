@@ -40,6 +40,7 @@
 #include "steam/steam_api.h"
 #include "LoadScreenUpdate.h"
 #include "datacache/idatacache.h"
+#include "master.h"
 
 #if !defined SWDS
 #include "voice.h"
@@ -1820,6 +1821,9 @@ void Host_ShutdownServer( void )
 	if ( !sv.IsActive() )
 		return;
 
+	master->ShutdownConnection();
+
+	
 	Host_AllowQueuedMaterialSystem( false );
 	// clear structures
 #if !defined( SWDS )
