@@ -132,7 +132,7 @@ public:
 	// methods of ISpatialLeafEnumerator
 public:
 
-	bool EnumerateLeaf( int leaf, intp context );
+	bool EnumerateLeaf( int leaf, int context );
 
 	// Adds a shadow to a leaf
 	void AddShadowToLeaf( int leaf, ClientLeafShadowHandle_t handle );
@@ -1132,7 +1132,7 @@ void CClientLeafSystem::AddRenderableToLeaves( ClientRenderHandle_t handle, int 
 //-----------------------------------------------------------------------------
 // Inserts an element into the tree
 //-----------------------------------------------------------------------------
-bool CClientLeafSystem::EnumerateLeaf( int leaf, intp context )
+bool CClientLeafSystem::EnumerateLeaf( int leaf, int context )
 {
 	EnumResultList_t *pList = (EnumResultList_t *)context;
 	if ( ThreadInMainThread() )
@@ -1168,7 +1168,7 @@ void CClientLeafSystem::InsertIntoTree( ClientRenderHandle_t &handle )
 	Assert( absMins.IsValid() && absMaxs.IsValid() );
 
 	ISpatialQuery* pQuery = engine->GetBSPTreeQuery();
-	pQuery->EnumerateLeavesInBox( absMins, absMaxs, this, (intp)&list );
+	pQuery->EnumerateLeavesInBox( absMins, absMaxs, this, (int)&list );
 
 	if ( list.pHead )
 	{
@@ -1337,7 +1337,7 @@ void CClientLeafSystem::ComputeTranslucentRenderLeaf( int count, const LeafIndex
 
 	static CUtlVector<RenderableInfo_t *> orderedList; // @MULTICORE (toml 8/30/2006): will need to make non-static if thread this function
 	static CUtlVector<IClientRenderable *> renderablesToUpdate;
-	intp leaf = 0;
+	int leaf = 0;
 	for ( i = 0; i < count; ++i )
 	{
 		leaf = pLeafList[i];

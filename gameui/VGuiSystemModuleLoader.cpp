@@ -161,7 +161,7 @@ bool CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
 		{
 			dllPath = it->GetString("dll_osx");
 		}
-		else if ( IsLinux() || IsBSD() )
+		else if ( IsLinux() )
 		{
 			dllPath = it->GetString("dll_linux");
 		}

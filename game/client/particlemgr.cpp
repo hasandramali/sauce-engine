@@ -1014,7 +1014,7 @@ bool CParticleEffectBinding::RecalculateBoundingBox()
 CEffectMaterial* CParticleEffectBinding::GetEffectMaterial( CParticleSubTexture *pSubTexture )
 {
 	// Hash the IMaterial pointer.
-	unsigned int index = (((uintp)pSubTexture->m_pGroup) >> 6) % EFFECT_MATERIAL_HASH_SIZE;
+	unsigned long index = (((unsigned long)pSubTexture->m_pGroup) >> 6) % EFFECT_MATERIAL_HASH_SIZE;
 	for ( CEffectMaterial *pCur=m_EffectMaterialHash[index]; pCur; pCur = pCur->m_pHashedNext )
 	{
 		if ( pCur->m_pGroup == pSubTexture->m_pGroup )
@@ -1111,8 +1111,8 @@ bool CParticleMgr::Init(unsigned long count, IMaterialSystem *pMaterials)
 void CParticleMgr::Term()
 {
 	// Free all the effects.
-	intp iNext;
-	for ( intp i = m_Effects.Head(); i != m_Effects.InvalidIndex(); i = iNext )
+	int iNext;
+	for ( int i = m_Effects.Head(); i != m_Effects.InvalidIndex(); i = iNext )
 	{
 		iNext = m_Effects.Next( i );
 		m_Effects[i]->m_pSim->NotifyRemove();
@@ -1388,11 +1388,12 @@ void CParticleMgr::RemoveAllNewEffects()
 
 void CParticleMgr::RemoveAllEffects()
 {
-	intp iNext;
-	for ( intp i = m_Effects.Head(); i != m_Effects.InvalidIndex(); i = iNext )
+	int iNext;
+	for ( int i = m_Effects.Head(); i != m_Effects.InvalidIndex(); i = iNext )
 	{
 		iNext = m_Effects.Next( i );
 		RemoveEffect( m_Effects[i] );
+
 	}
 
 	RemoveAllNewEffects();
@@ -1969,8 +1970,8 @@ void CParticleMgr::UpdateAllEffects( float flTimeDelta )
 	m_bUpdatingEffects = false;
 
 	// Remove any effects that were flagged to be removed.
-	intp iNext;
-	for ( intp i = m_Effects.Head(); i != m_Effects.InvalidIndex(); i=iNext )
+	int iNext;
+	for ( int i=m_Effects.Head(); i != m_Effects.InvalidIndex(); i=iNext )
 	{
 		iNext = m_Effects.Next( i );
 		CParticleEffectBinding *pEffect = m_Effects[i];

@@ -461,6 +461,14 @@ void CNPC_MetroPolice::NotifyDeadFriend( CBaseEntity* pFriend )
 	m_Sentences.Speak( "METROPOLICE_MAN_DOWN", SENTENCE_PRIORITY_MEDIUM );
 }
 
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+CNPC_MetroPolice::CNPC_MetroPolice()
+{
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -2604,7 +2612,7 @@ void CNPC_MetroPolice::IdleSound( void )
 
 			if ( m_Sentences.Speak( pQuestion[bIsCriminal][nQuestionType] ) >= 0 )
 			{
-				GetSquad()->BroadcastInteraction( g_interactionMetrocopIdleChatter, (void*)(intp)(METROPOLICE_CHATTER_RESPONSE + nQuestionType), this );
+				GetSquad()->BroadcastInteraction( g_interactionMetrocopIdleChatter, (void*)(METROPOLICE_CHATTER_RESPONSE + nQuestionType), this );
 				m_nIdleChatterType = METROPOLICE_CHATTER_WAIT_FOR_RESPONSE;
 			}
 		}
@@ -2975,7 +2983,7 @@ bool CNPC_MetroPolice::HandleInteraction(int interactionType, void *data, CBaseC
 
 	if ( interactionType == g_interactionMetrocopIdleChatter )
 	{
-		m_nIdleChatterType = (intp)data;
+		m_nIdleChatterType = (int)data;
 		return true;
 	}
 

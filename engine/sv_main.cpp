@@ -72,16 +72,14 @@
 #include "cl_rcon.h"
 #include "host_state.h"
 #include "voice.h"
-#include "cbenchmark.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-#include "tier0/memalloc.h"
 
 extern CNetworkStringTableContainer *networkStringTableContainerServer;
 extern CNetworkStringTableContainer *networkStringTableContainerClient;
-static void OnHibernateWhenEmptyChanged( IConVar *var, const char *pOldValue, float flOldValue );
-ConVar sv_hibernate_when_empty( "sv_hibernate_when_empty", "1", 0, "Puts the server into extremely low CPU usage mode when no clients connected", OnHibernateWhenEmptyChanged );
+//void OnHibernateWhenEmptyChanged( IConVar *var, const char *pOldValue, float flOldValue );
+//ConVar sv_hibernate_when_empty( "sv_hibernate_when_empty", "1", 0, "Puts the server into extremely low CPU usage mode when no clients connected", OnHibernateWhenEmptyChanged );
 //ConVar sv_hibernate_ms( "sv_hibernate_ms", "20", 0, "# of milliseconds to sleep per frame while hibernating" );
 //ConVar sv_hibernate_ms_vgui( "sv_hibernate_ms_vgui", "20", 0, "# of milliseconds to sleep per frame while hibernating but running the vgui dedicated server frontend" );
 //static ConVar sv_hibernate_postgame_delay( "sv_hibernate_postgame_delay", "5", 0, "# of seconds to wait after final client leaves before hibernating.");
@@ -210,16 +208,15 @@ static ConVar sv_consistency( "sv_consistency", "1", FCVAR_REPLICATED, "Legacy v
 
 /// XXX(JohnS): When steam voice gets ugpraded to Opus we will probably default back to steam.  At that time we should
 ///             note that Steam voice is the highest quality codec below.
-static ConVar sv_voicecodec( "sv_voicecodec", "vaudio_opus", 0,
+static ConVar sv_voicecodec( "sv_voicecodec", "vaudio_celt", 0,
                              "Specifies which voice codec to use. Valid options are:\n"
                              "vaudio_speex - Legacy Speex codec (lowest quality)\n"
                              "vaudio_celt - Newer CELT codec\n"
-							 "vaudio_opus - Latest Opus codec (highest quality, comes by default)\n"
                              "steam - Use Steam voice API" );
 
 
-ConVar  sv_mincmdrate( "sv_mincmdrate", "20", FCVAR_REPLICATED, "This sets the minimum value for cl_cmdrate. 0 == unlimited." );
-ConVar  sv_maxcmdrate( "sv_maxcmdrate", "100", FCVAR_REPLICATED, "(If sv_mincmdrate is > 0), this sets the maximum value for cl_cmdrate." );
+ConVar  sv_mincmdrate( "sv_mincmdrate", "10", FCVAR_REPLICATED, "This sets the minimum value for cl_cmdrate. 0 == unlimited." );
+ConVar  sv_maxcmdrate( "sv_maxcmdrate", "66", FCVAR_REPLICATED, "(If sv_mincmdrate is > 0), this sets the maximum value for cl_cmdrate." );
 ConVar  sv_client_cmdrate_difference( "sv_client_cmdrate_difference", "20", FCVAR_REPLICATED, 
 	"cl_cmdrate is moved to within sv_client_cmdrate_difference units of cl_updaterate before it "
 	"is clamped between sv_mincmdrate and sv_maxcmdrate." );
@@ -1541,13 +1538,13 @@ CPureServerWhitelist * CGameServer::GetPureServerWhitelist() const
 	return m_pPureServerWhitelist;
 }
 
-static void OnHibernateWhenEmptyChanged( IConVar *var, const char *pOldValue, float flOldValue )
-{
-	// We only need to do something special if we were preventing hibernation
-	// with sv_hibernate_when_empty but we would otherwise have been hibernating.
-	// In that case, punt all connected clients.
-	sv.UpdateHibernationState( );
-}
+//void OnHibernateWhenEmptyChanged( IConVar *var, const char *pOldValue, float flOldValue )
+//{
+//	// We only need to do something special if we were preventing hibernation
+//	// with sv_hibernate_when_empty but we would otherwise have been hibernating.
+//	// In that case, punt all connected clients.
+//	sv.UpdateHibernationState( ); 
+//}
 
 static bool s_bExitWhenEmpty = false;
 static ConVar sv_memlimit(  "sv_memlimit", "0", 0, 
@@ -1753,7 +1750,8 @@ void CGameServer::UpdateHibernationState()
 		s_bExitWhenEmpty = true;
 	}
 
-	SetHibernating( sv_hibernate_when_empty.GetBool() && hibernateFromGCServer && !bHaveAnyClients );
+	//SetHibernating( sv_hibernate_when_empty.GetBool() && hibernateFromGCServer && !bHaveAnyClients );
+	SetHibernating( hibernateFromGCServer && !bHaveAnyClients );
 }
 
 void CGameServer::FinishRestore()
@@ -2713,14 +2711,6 @@ bool CGameServer::SpawnServer( const char *szMapName, const char *szMapFile, con
 		event->SetString( "os", "LINUX" );
 #elif defined ( OSX )
 		event->SetString( "os", "OSX" );
-#elif defined(PLATFORM_BSD)
-    event->SetString("os",
-#    ifdef __FreeBSD__
-      "FreeBSD"
-#    else
-      "BSD"
-#    endif
-    );
 #else
 #error
 #endif
@@ -2853,9 +2843,6 @@ void SV_Think( bool bIsSimulating )
 	bIsSimulating =  bIsSimulating && ( sv.IsMultiplayer() || cl.IsActive() );
 
 	g_pServerPluginHandler->GameFrame( bIsSimulating );
-
-	if( bIsSimulating )
-		GetBenchResultsMgr()->Frame();
 }
 
 //-----------------------------------------------------------------------------
@@ -2931,7 +2918,6 @@ void SV_Frame( bool finalTick )
 	// unlock sting tables to allow changes, helps to find unwanted changes (bebug build only)
 	networkStringTableContainerServer->Lock( false );
 	
-
 	// Run any commands from client and play client Think functions if it is time.
 	sv.RunFrame(); // read network input etc
 

@@ -715,7 +715,9 @@ class CViewEffectsSaveRestoreBlockHandler :	public CDefSaveRestoreBlockHandler
 {
 	struct QueuedItem_t;
 public:
-	CViewEffectsSaveRestoreBlockHandler() = default;
+	CViewEffectsSaveRestoreBlockHandler()
+	{
+	}
 
 	const char *GetBlockName()
 	{

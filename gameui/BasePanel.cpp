@@ -27,7 +27,6 @@
 #include "materialsystem/materialsystem_config.h"
 #include "materialsystem/imaterialsystem.h"
 #include "sourcevr/isourcevirtualreality.h"
-#include "VGuiMatSurface/IMatSystemSurface.h"
 
 using namespace vgui;
 
@@ -86,10 +85,6 @@ using namespace vgui;
 #include "../engine/imatchmaking.h"
 #include "tier1/utlstring.h"
 #include "steam/steam_api.h"
-
-#ifdef ANDROID
-#include <SDL_misc.h>
-#endif
 
 #undef MessageBox	// Windows helpfully #define's this to MessageBoxA, we're using vgui::MessageBox
 
@@ -200,98 +195,6 @@ void CGameMenuItem::PaintBackground()
 void CGameMenuItem::SetRightAlignedText(bool state)
 {
 	m_bRightAligned = state;
-}
-
-class ImageButton : public vgui::Panel
-{
-public:
-	ImageButton(Panel *parent, const char *imageName) : Panel(parent)
-	{
-		m_szUrl = NULL;
-
-		m_textureID = vgui::surface()->CreateNewTextureID();
-		vgui::surface()->DrawSetTextureFile( m_textureID, imageName, true, false);
-		m_bSelected = false;
-	}
-
-	virtual void Paint()
-	{
-		if( GameUI().IsInLevel() ) return;
-
-		int color = m_bSelected ? 120 : 160;
-
-		vgui::surface()->DrawSetColor(color, color, color, 100);
-		vgui::surface()->DrawFilledRect( 0, 0, GetWide(), GetTall() );
-		vgui::surface()->DrawSetTexture( m_textureID );
-
-		vgui::surface()->DrawSetColor( 255, 255, 255, 255 );
-		vgui::surface()->DrawTexturedRect( 0, 0, GetWide(), GetTall() );
-	}
-
-	virtual void OnMousePressed(MouseCode code)
-	{
-		if( GameUI().IsInLevel() ) return;
-
-		m_bSelected = true;
-		input()->SetMouseCapture(GetVPanel());
-	}
-
-	virtual void OnMouseReleased(MouseCode code)
-	{
-		if( GameUI().IsInLevel() ) return;
-
-		m_bSelected = false;
-#ifdef ANDROID
-		if( m_szUrl ) SDL_OpenURL( m_szUrl );
-#endif
-
-		input()->SetMouseCapture(NULL);
-	}
-
-	void SetUrl( const char *url )
-	{
-		m_szUrl = url;
-	}
-
-	virtual void OnScreenSizeChanged( int nOldWidth, int nOldHeight )
-	{
-		int nw, nh;
-		surface()->GetScreenSize(nw, nh);
-		int scaled_w = scheme()->GetProportionalScaledValue(m_iOldW);
-
-		Panel::SetPos(nw-scheme()->GetProportionalScaledValue(m_iOldX)-scaled_w, m_iOldY);
-		Panel::SetSize(scaled_w, scheme()->GetProportionalScaledValue(m_iOldH));
-	}
-
-	void SetBounds( int x, int y, int w, int h )
-	{
-		m_iOldX = x; m_iOldY = y;
-		m_iOldW = w; m_iOldH = h;
-
-		int nw, nh;
-		surface()->GetScreenSize(nw, nh);
-		int scaled_w = scheme()->GetProportionalScaledValue(m_iOldW);
-
-		Panel::SetPos(nw-scheme()->GetProportionalScaledValue(m_iOldX)-scaled_w, m_iOldY);
-		Panel::SetSize(scaled_w, scheme()->GetProportionalScaledValue(m_iOldH));
-	}
-
-private:
-	int m_iOldX, m_iOldY;
-	int m_iOldW, m_iOldH;
-
-	bool m_bSelected;
-	int m_textureID;
-	const char *m_szUrl;
-};
-
-void AddUrlButton(vgui::Panel *parent, const char *imgName, const char *url )
-{
-	static int i = 0;
-	ImageButton *panel = new ImageButton( parent, imgName );
-	panel->SetUrl( url );
-	panel->SetBounds( 15+i*52, 10, 48, 48 );
-	i++;
 }
 
 //-----------------------------------------------------------------------------
@@ -730,7 +633,7 @@ public:
 		}
 	}
 
-    MESSAGE_FUNC_HANDLE( OnCursorEnteredMenuItem, "CursorEnteredMenuItem", menuItem);
+	MESSAGE_FUNC_INT( OnCursorEnteredMenuItem, "CursorEnteredMenuItem", VPanel);
 
 private:
 	CFooterPanel *m_pConsoleFooter;
@@ -741,8 +644,9 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Respond to cursor entering a menuItem.
 //-----------------------------------------------------------------------------
-void CGameMenu::OnCursorEnteredMenuItem(VPANEL menuItem)
+void CGameMenu::OnCursorEnteredMenuItem(int VPanel)
 {
+	VPANEL menuItem = (VPANEL)VPanel;
 	MenuItem *item = static_cast<MenuItem *>(ipanel()->GetPanel(menuItem, GetModuleName()));
 	KeyValues *pCommand = item->GetCommand();
 	if ( !pCommand->GetFirstSubKey() )
@@ -751,7 +655,7 @@ void CGameMenu::OnCursorEnteredMenuItem(VPANEL menuItem)
 	if ( !pszCmd || !pszCmd[0] )
 		return;
 
-	BaseClass::OnCursorEnteredMenuItem( menuItem );
+	BaseClass::OnCursorEnteredMenuItem( VPanel );
 }
 
 static CBackgroundMenuButton* CreateMenuButton( CBasePanel *parent, const char *panelName, const wchar_t *panelText )
@@ -913,14 +817,7 @@ CBasePanel::CBasePanel() : Panel(NULL, "BaseGameUIPanel")
 			m_iGameID = CONTEXT_GAME_GAME_TEAM_FORTRESS;
 			m_bSinglePlayer = false;
 		}
-	}
 
-	if( IsAndroid() )
-	{
-		AddUrlButton( this, "vgui/\x64\x69\x73\x63\x6f\x72\x64\x5f\x6c\x6f\x67\x6f", "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x69\x73\x63\x6f\x72\x64\x2e\x67\x67\x2f\x68\x5a\x52\x42\x37\x57\x4d\x67\x47\x77" );
-		AddUrlButton( this, "vgui/\x74\x77\x69\x74\x74\x65\x72\x5f\x6c\x6f\x67\x6f", "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x74\x77\x69\x74\x74\x65\x72\x2e\x63\x6f\x6d\x2f\x6e\x69\x6c\x6c\x65\x72\x75\x73\x72" );
-		AddUrlButton( this, "vgui/\x74\x65\x6c\x65\x67\x72\x61\x6d\x5f\x6c\x6f\x67\x6f", "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x74\x2e\x6d\x65\x2f\x6e\x69\x6c\x6c\x65\x72\x75\x73\x72\x5f\x73\x6f\x75\x72\x63\x65" );
-		AddUrlButton( this, "vgui/\x67\x69\x74\x68\x75\x62\x5f\x6c\x6f\x67\x6f", "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x67\x69\x74\x68\x75\x62\x2e\x63\x6f\x6d\x2f\x6e\x69\x6c\x6c\x65\x72\x75\x73\x72\x2f\x73\x6f\x75\x72\x63\x65\x2d\x65\x6e\x67\x69\x6e\x65" );
 	}
 }
 
@@ -1234,7 +1131,7 @@ void CBasePanel::UpdateBackgroundState()
 			vgui::GetAnimationController()->RunAnimationCommand( m_pGameLogo, "alpha", targetTitleAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR );
 		}
 
-		// Msg( "animating title (%d => %d at time %.2f)\n", m_pGameMenuButtons[0]->GetAlpha(), (int)targetTitleAlpha, engine->Time());
+		// Msg( "animating title (%d => %d at time %.2f)\n", m_pGameMenuButton->GetAlpha(), (int)targetTitleAlpha, engine->Time());
 		for ( i=0; i<m_pGameMenuButtons.Count(); ++i )
 		{
 			vgui::GetAnimationController()->RunAnimationCommand( m_pGameMenuButtons[i], "alpha", targetTitleAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR );
@@ -1607,21 +1504,6 @@ CGameMenu *CBasePanel::RecursiveLoadGameMenu(KeyValues *datafile)
 	else
 		menu->AddMenuItem("Console", "CONSOLE", "OpenConsole", this);
 
-	bool bFoundServerBrowser = false;
-
-	for (KeyValues *dat = datafile->GetFirstSubKey(); dat != NULL; dat = dat->GetNextKey())
-	{
-		const char *label = dat->GetString("label", "<unknown>");
-		const char *cmd = dat->GetString("command", NULL);
-		const char *name = dat->GetString("name", label);
-
-		if( cmd && Q_strcmp(cmd, "OpenServerBrowser") == 0 )
-			bFoundServerBrowser = true;
-	}
-
-	if( !bFoundServerBrowser && !ModInfo().IsSinglePlayerOnly() )
-		menu->AddMenuItem("AntiM*dG*yButton", "#GameUI_GameMenu_FindServers", "OpenServerBrowser", this);
-
 	// loop through all the data adding items to the menu
 	for (KeyValues *dat = datafile->GetFirstSubKey(); dat != NULL; dat = dat->GetNextKey())
 	{
@@ -1629,8 +1511,7 @@ CGameMenu *CBasePanel::RecursiveLoadGameMenu(KeyValues *datafile)
 		const char *cmd = dat->GetString("command", NULL);
 		const char *name = dat->GetString("name", label);
 
-		if ( cmd && (!Q_stricmp( cmd, "OpenFriendsDialog" )
-			|| !Q_stricmp( cmd, "engine bug" )) )
+		if ( cmd && !Q_stricmp( cmd, "OpenFriendsDialog" ) && bSteamCommunityFriendsVersion )
 			continue;
 
 		menu->AddMenuItem(name, label, cmd, this, dat);
@@ -1770,7 +1651,7 @@ void CBasePanel::PerformLayout()
 	for ( int i=0; i<m_pGameMenuButtons.Count(); ++i )
 	{
 		// Get the size of the logo text
-		// int textWide, textTall;
+		//int textWide, textTall;
 		m_pGameMenuButtons[i]->SizeToContents();
 		//vgui::surface()->GetTextSize( m_pGameMenuButtons[i]->GetFont(), ModInfo().GetGameTitle(), textWide, textTall );
 
@@ -1921,11 +1802,8 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 		// load the loading icon
 		if ( m_iLoadingImageID == -1 )
 		{
-			const char* loading = "console/startup_loading";
-			if ( IsSteamDeck() )
-				loading = "gamepadui/game_logo";
 			m_iLoadingImageID = surface()->CreateNewTextureID();
-			surface()->DrawSetTextureFile( m_iLoadingImageID, loading, false, false );
+			surface()->DrawSetTextureFile( m_iLoadingImageID, "Console/startup_loading", false, false );
 		}
 	}
 }
@@ -2343,7 +2221,7 @@ void CBasePanel::RunMenuCommand(const char *command)
 
 				RegCloseKey(hKey);
 			}
-#elif defined( OSX ) || defined( LINUX ) || defined(PLATFORM_BSD)
+#elif defined( OSX ) || defined( LINUX )
 			FILE *fp = fopen( "/tmp/hl2_relaunch", "w+" );
 			if ( fp )
 			{
@@ -2435,7 +2313,7 @@ bool CBasePanel::IsPromptableCommand( const char *command )
 //-------------------------
 // Purpose: Job wrapper
 //-------------------------
-static uintp PanelJobWrapperFn( void *pvContext )
+static unsigned PanelJobWrapperFn( void *pvContext )
 {
 	CBasePanel::CAsyncJobContext *pAsync = reinterpret_cast< CBasePanel::CAsyncJobContext * >( pvContext );
 

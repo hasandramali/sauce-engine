@@ -556,7 +556,7 @@ void CPortal_Player::UpdateExpression( void )
 		return;
 	}
 
-	char szScene[256] = { 0 };
+	char const szScene[256];
 	response->GetResponse( szScene, sizeof(szScene) );
 
 	// Ignore updates that choose the same scene

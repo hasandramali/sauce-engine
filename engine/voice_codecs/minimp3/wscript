@@ -17,7 +17,6 @@ def configure(conf):
 def build(bld):
 	source = [
 		'mp3codecs.cpp',
-		'../../../public/tier0/memoverride.cpp'
 	]
 
 	includes = [

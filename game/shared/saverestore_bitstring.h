@@ -20,7 +20,9 @@ template <class BITSTRING>
 class CVarBitVecSaveRestoreOps : public CDefSaveRestoreOps
 {
 public:
-	CVarBitVecSaveRestoreOps() = default;
+	CVarBitVecSaveRestoreOps()
+	{
+	}
 
 	// save data type interface
 	virtual void Save( const SaveRestoreFieldInfo_t &fieldInfo, ISave *pSave )

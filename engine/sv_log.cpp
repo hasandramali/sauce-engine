@@ -697,14 +697,12 @@ static bool CreateTempFilename( TempFilename_t &info, const char *filenameBase, 
 				if ( info.fh.file )
 					return true;
 			}
-#if HAVE_ZLIB
 			else
 			{
 				info.fh.gzfile = gzopen( info.Filename, "wb6" );
 				if ( info.fh.gzfile )
 					return true;
 			}
-#endif
 		}
 	}
 
@@ -715,7 +713,6 @@ static bool CreateTempFilename( TempFilename_t &info, const char *filenameBase, 
 // Gzip Filename to Filename.gz.
 static bool gzip_file_compress( const CUtlString &Filename )
 {
-#if HAVE_ZLIB
 	bool bRet = false;
 
 	// Try to find a unique temp filename.
@@ -761,9 +758,6 @@ static bool gzip_file_compress( const CUtlString &Filename )
 	}
 
 	return bRet;
-#else
-	return false;
-#endif
 }
 
 static void FixupInvalidPathChars( char *filename )

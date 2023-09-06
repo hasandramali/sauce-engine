@@ -15,7 +15,7 @@
 class CNodeVert
 {
 public:
-						CNodeVert() = default;
+						CNodeVert()					{}
 						CNodeVert( int ix, int iy ) {x=ix; y=iy;}
 
 	inline int&			operator[]( int i )			{return ((int*)this)[i];}

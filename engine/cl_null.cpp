@@ -10,7 +10,7 @@
 #include "convar.h"
 #include "enginestats.h"
 #include "bspfile.h" // dworldlight_t
-#include "soundservice.h"
+#include "audio/public/soundservice.h"
 #include "tier0/systeminformation.h"
 
 ISoundServices *g_pSoundServices = NULL;

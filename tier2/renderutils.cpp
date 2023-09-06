@@ -12,9 +12,7 @@
 #include "materialsystem/imaterial.h"
 #include "tier0/vprof.h"
 #include "tier0/basetypes.h"
-#ifdef DX_TO_GL_ABSTRACTION
 #include "togl/rendermechanism.h"
-#endif
 
 #if !defined(M_PI)
 	#define M_PI			3.14159265358979323846

@@ -38,7 +38,7 @@
 
 #include "glmgr_flush.inl"
 
-#if defined(PLATFORM_BSD) || defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
+#if defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
 	#include "appframework/ilaunchermgr.h"
 	extern ILauncherMgr *g_pLauncherMgr;
 #endif
@@ -404,7 +404,7 @@ HRESULT IDirect3DDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD
 	
 	if (Usage & D3DUSAGE_DYNAMIC)
 	{
-		key.m_texFlags |= kGLMTexDynamic;
+		// GLMPRINTF(("-X- DYNAMIC tex usage ignored.."));	//FIXME
 	}
 	
 	if (Usage & D3DUSAGE_TEXTURE_SRGB)
@@ -617,7 +617,7 @@ HRESULT IDirect3DDevice9::CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Us
 		
 	if (Usage & D3DUSAGE_DYNAMIC)
 	{
-		key.m_texFlags |= kGLMTexDynamic;
+		//GLMPRINTF(("-X- DYNAMIC tex usage ignored.."));	//FIXME
 	}
 	
 	if (Usage & D3DUSAGE_TEXTURE_SRGB)
@@ -823,7 +823,7 @@ HRESULT IDirect3DDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,
 	
 	if (Usage & D3DUSAGE_DYNAMIC)
 	{
-		key.m_texFlags |= kGLMTexDynamic;
+		GLMPRINTF(("-X- DYNAMIC tex usage ignored.."));	//FIXME
 	}
 	
 	if (Usage & D3DUSAGE_TEXTURE_SRGB)
@@ -1034,15 +1034,13 @@ HRESULT IDirect3DSurface9::LockRect(D3DLOCKED_RECT* pLockedRect,CONST RECT* pRec
 	lockreq.m_region.xmax = pRect->right;
 	lockreq.m_region.ymax = pRect->bottom;
 	lockreq.m_region.zmax = 1;
-
+	
 	if ((Flags & (D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK)) == (D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK) )
 	{
 		// smells like readback, force texel readout
 		lockreq.m_readback = true;
 	}
-
-	lockreq.m_readonly = (Flags & D3DLOCK_READONLY) ? true : false;
-
+	
 	char	*lockAddress;
 	int		yStride;
 	int		zStride;
@@ -3765,15 +3763,11 @@ static uint32 CentroidMaskFromName( bool bPixelShader, const char *pName )
 static int ShadowDepthSamplerMaskFromName( const char *pName )
 {
 	if ( !pName )
-		return 0;
-
+		return 0;	
+	
 	if ( V_stristr( pName, "water_ps" ) )
 	{
 		return (1<<7);
-	}
-	else if ( V_stristr( pName, "skin_ps" ) )
-	{
-		return (1<<4);
 	}
 	else if ( V_stristr( pName, "infected_ps" ) )
 	{
@@ -3801,7 +3795,7 @@ static int ShadowDepthSamplerMaskFromName( const char *pName )
 	}
 	else if ( V_stristr( pName, "worldtwotextureblend_ps" ) ) 
 	{
-		return (1<<2);
+		return (1<<7);
 	}
 	else if ( V_stristr( pName, "teeth_flashlight_ps" ) ) 
 	{
@@ -3818,27 +3812,27 @@ static int ShadowDepthSamplerMaskFromName( const char *pName )
 	else if ( V_stristr( pName, "deferred_global_light_ps" ) )
 	{
 		return (1<<14);
-	}
+	}	
 	else if ( V_stristr( pName, "global_lit_simple_ps" ) )
 	{
 		return (1<<14);
-	}
+	}	
 	else if ( V_stristr( pName, "lightshafts_ps" ) )
 	{
 		return (1<<1);
-	}
+	}	
 	else if ( V_stristr( pName, "multiblend_combined_ps" ) )
 	{
 		return (1<<14);
-	}
+	}	
 	else if ( V_stristr( pName, "multiblend_ps" ) )
 	{
 		return (1<<14);
-	}
+	}	
 	else if ( V_stristr( pName, "customhero_ps" ) )
 	{
 		return (1<<14);
-	}
+	}	
 
 	// This shader doesn't have a shadow depth map sampler
 	return 0;
@@ -5326,7 +5320,7 @@ HRESULT IDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT Pr
 //	[in] Number of primitives to render. The number of vertices used is a function of the primitive count and the primitive type. The maximum number of primitives allowed is determined by checking the MaxPrimitiveCount member of the D3DCAPS9 structure.
 
 // BE VERY CAREFUL what you do in this function. It's extremely hot, and calling the wrong GL API's in here will crush perf. on NVidia threaded drivers.
-#if 1 //ifndef OSX
+#ifndef OSX
 
 HRESULT IDirect3DDevice9::DrawIndexedPrimitive( D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount )
 {
@@ -6478,8 +6472,7 @@ HRESULT	ID3DXMatrixStack::Create()
 	m_stack.EnsureCapacity( 16 );	// 1KB ish
 	m_stack.AddToTail();
 	m_stackTop = 0;				// top of stack is at index 0 currently
-	m_mark = false;
-
+	
 	LoadIdentity();
 	
 	return S_OK;

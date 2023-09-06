@@ -203,148 +203,6 @@ struct StaticPropLumpV6_t
 	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
 };
 
-struct StaticPropLumpV7_t
-{
-	DECLARE_BYTESWAP_DATADESC();
-	Vector			m_Origin;
-	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
-	unsigned char	m_Solid;
-	unsigned char	m_Flags;
-	int				m_Skin;
-	float			m_FadeMinDist;
-	float			m_FadeMaxDist;
-	Vector			m_LightingOrigin;
-	float			m_flForcedFadeScale;
-	unsigned short	m_nMinDXLevel;
-	unsigned short	m_nMaxDXLevel;
-	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
-	color32			m_DiffuseModulation;	// per instance color and alpha modulation
-};
-
-struct StaticPropLumpV8_t
-{
-	DECLARE_BYTESWAP_DATADESC();
-	Vector			m_Origin;
-	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
-	unsigned char	m_Solid;
-	unsigned char	m_Flags;
-	int				m_Skin;
-	float			m_FadeMinDist;
-	float			m_FadeMaxDist;
-	Vector			m_LightingOrigin;
-	float			m_flForcedFadeScale;
-	unsigned char	m_nMinCPULevel;
-	unsigned char	m_nMaxCPULevel;
-	unsigned char	m_nMinGPULevel;
-	unsigned char	m_nMaxGPULevel;
-	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
-	color32			m_DiffuseModulation;	// per instance color and alpha modulation
-};
-
-struct StaticPropLumpV9_t
-{
-	DECLARE_BYTESWAP_DATADESC();
-	Vector			m_Origin;
-	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
-	unsigned char	m_Solid;
-	unsigned char	m_Flags;
-	int				m_Skin;
-	float			m_FadeMinDist;
-	float			m_FadeMaxDist;
-	Vector			m_LightingOrigin;
-	float			m_flForcedFadeScale;
-	unsigned char	m_nMinCPULevel;
-	unsigned char	m_nMaxCPULevel;
-	unsigned char	m_nMinGPULevel;
-	unsigned char	m_nMaxGPULevel;
-	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
-	color32			m_DiffuseModulation;	// per instance color and alpha modulation
-	bool			m_bDisableX360;
-};
-
-struct StaticPropLumpV10_t
-{
-	Vector			m_Origin;
-	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
-	unsigned char	m_Solid;
-	int				m_Skin;
-	float			m_FadeMinDist;
-	float			m_FadeMaxDist;
-	Vector			m_LightingOrigin;
-	float			m_flForcedFadeScale;
-	unsigned short	m_nMinDXLevel;
-	unsigned short	m_nMaxDXLevel;
-	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
-	unsigned int	m_Flags;
-	unsigned short  m_nLightmapResolutionX;
-	unsigned short  m_nLightmapResolutionY;
-};
-
-// version 10 bsp21
-struct StaticPropLumpV10_21_t
-{
-	DECLARE_BYTESWAP_DATADESC();
-	Vector			m_Origin;
-	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
-	unsigned char	m_Solid;
-	unsigned char	m_Flags;
-	int				m_Skin;
-	float			m_FadeMinDist;
-	float			m_FadeMaxDist;
-	Vector			m_LightingOrigin;
-	float			m_flForcedFadeScale;
-	unsigned char	m_nMinCPULevel;
-	unsigned char	m_nMaxCPULevel;
-	unsigned char	m_nMinGPULevel;
-	unsigned char	m_nMaxGPULevel;
-	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
-	color32			m_DiffuseModulation;	// per instance color and alpha modulation
-	bool			m_bDisableX360;
-	int				m_FlagsEx;				// more flags (introduced in v10)
-};
-
-// version 11
-struct StaticPropLumpV11_t
-{
-	DECLARE_BYTESWAP_DATADESC();
-	Vector			m_Origin;
-	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
-	unsigned char	m_Solid;
-	unsigned char	m_Flags;
-	int				m_Skin;
-	float			m_FadeMinDist;
-	float			m_FadeMaxDist;
-	Vector			m_LightingOrigin;
-	float			m_flForcedFadeScale;
-	unsigned char	m_nMinCPULevel;
-	unsigned char	m_nMaxCPULevel;
-	unsigned char	m_nMinGPULevel;
-	unsigned char	m_nMaxGPULevel;
-	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
-	color32			m_DiffuseModulation;	// per instance color and alpha modulation
-	bool			m_bDisableX360;
-	int				m_FlagsEx;				// more flags (introduced in v10)
-	float			m_flPropScale;
-};
-
 struct StaticPropLump_t
 {
 	DECLARE_BYTESWAP_DATADESC();
@@ -366,11 +224,8 @@ struct StaticPropLump_t
 	unsigned short  m_nLightmapResolutionX;
 	unsigned short  m_nLightmapResolutionY;
 
-	color32			m_DiffuseModulation;	// per instance color and alpha modulation
-	bool			m_bDisableX360;
-	int				m_FlagsEx;				// more flags (introduced in v10)
 
-	inline StaticPropLump_t& operator=(const StaticPropLumpV4_t& _rhs)
+	StaticPropLump_t& operator=(const StaticPropLumpV4_t& _rhs)
 	{
 		m_Origin				= _rhs.m_Origin;
 		m_Angles				= _rhs.m_Angles;
@@ -391,17 +246,13 @@ struct StaticPropLump_t
 		m_nMaxDXLevel			= 0;
 		m_nLightmapResolutionX	= 0;
 		m_nLightmapResolutionY	= 0;
-		m_DiffuseModulation.r = 0;
-		m_DiffuseModulation.g = 0;
-		m_DiffuseModulation.b = 0;
-		m_DiffuseModulation.a = 0;
 
 		// Older versions don't want this.
 		m_Flags					|= STATIC_PROP_NO_PER_TEXEL_LIGHTING;		
 		return *this;
 	}
 
-	inline StaticPropLump_t& operator=(const StaticPropLumpV5_t& _rhs)
+	StaticPropLump_t& operator=(const StaticPropLumpV5_t& _rhs)
 	{
 		(*this) = reinterpret_cast<const StaticPropLumpV4_t&>(_rhs);
 
@@ -409,7 +260,7 @@ struct StaticPropLump_t
 		return *this;
 	}
 
-	inline StaticPropLump_t& operator=(const StaticPropLumpV6_t& _rhs)
+	StaticPropLump_t& operator=(const StaticPropLumpV6_t& _rhs)
 	{
 		(*this) = reinterpret_cast<const StaticPropLumpV5_t&>(_rhs);
 
@@ -417,39 +268,10 @@ struct StaticPropLump_t
 		m_nMaxDXLevel = _rhs.m_nMaxDXLevel;
 		return *this;
 	}
-
-	inline StaticPropLump_t& operator=(const StaticPropLumpV9_t& _rhs)
-	{
-		(*this) = reinterpret_cast<const StaticPropLumpV5_t&>(_rhs);
-
-		m_DiffuseModulation = _rhs.m_DiffuseModulation;
-		return *this;
-	}
-
-	inline StaticPropLump_t& operator=(const StaticPropLumpV10_t& _rhs)
-	{
-		(*this) = reinterpret_cast<const StaticPropLumpV6_t&>(_rhs);
-
-		m_Flags = _rhs.m_Flags;
-		m_nLightmapResolutionX = _rhs.m_nLightmapResolutionX;
-		m_nLightmapResolutionY = _rhs.m_nLightmapResolutionY;
-		return *this;
-	}
-
-	inline StaticPropLump_t& operator=(const StaticPropLumpV10_21_t& _rhs)
-	{
-		(*this) = reinterpret_cast<const StaticPropLumpV9_t&>(_rhs);
-
-		m_FlagsEx = _rhs.m_FlagsEx;
-		return *this;
-	}
-
-	inline StaticPropLump_t& operator=(const StaticPropLumpV11_t& _rhs)
-	{
-		(*this) = reinterpret_cast<const StaticPropLumpV10_21_t&>(_rhs);
-		return *this;
-	}
 };
+
+
+
 
 struct StaticPropLeafLump_t
 {

@@ -149,7 +149,7 @@ public:
     void operator-=(const IVP_Time b) { this->seconds -= b.seconds; }
     IVP_Time operator+(double val) const { IVP_Time result; result.seconds = this->seconds + val; return result;}
 
-    IVP_Time() = default;
+    IVP_Time(){;};
     IVP_Time(double time){ seconds = time; };
 };
 
@@ -187,14 +187,6 @@ typedef unsigned char	uchar; // feel free to remove these three typedefs
 typedef unsigned short	ushort;
 typedef unsigned int	uint;
 
-#ifdef PLATFORM_64BITS
-typedef long long			intp;
-typedef unsigned long long	uintp;
-#else
-typedef int					intp;
-typedef unsigned int		uintp;
-#endif
-
 typedef const char *IVP_ERROR_STRING;
 #define IVP_NO_ERROR 0
 
@@ -228,17 +220,21 @@ enum IVP_RETURN_TYPE {
 
 #define IVP_CDECL       /* set this to whatever you need to satisfy your linker */
 
-#if !defined(__MWERKS__) || !defined(__POWERPC__)
-#   ifdef OSX
-#       include <malloc/malloc.h>
-#   else
-#       include <malloc.h>
-#   endif
+#if defined(LINUX)
+#if defined(ANDROID)
+#define __THROW
 #endif
-
-#include <string.h>
-
-
+	extern "C" {
+	    void free(void *) __THROW;
+	    void *memset( void *, int, unsigned int) __THROW;
+	};
+#else
+#if !defined(__MWERKS__) || !defined(__POWERPC__)
+#	include <malloc.h>
+#endif
+#	include <string.h>
+#endif
+	
 	char * IVP_CDECL p_calloc(int nelem,int size);
 	void * IVP_CDECL p_realloc(void* memblock, int size);
 	void * IVP_CDECL p_malloc(unsigned int size);

@@ -20,18 +20,11 @@ def build(bld):
 		'FontAmalgam.cpp',
 		'FontManager.cpp',
 		'FontEffects.cpp',
+		#'Win32Font.cpp',			[$WIN32 && !$X360]
 		#'Win32Font_x360.cpp',	[$X360]
 		#'osxfont.cpp',			[$OSXALL]
+		'linuxfont.cpp'	#		[$LINUXALL]
 	]
-	
-	if bld.env.DEST_OS == 'win32':
-		source += [
-			'Win32Font.cpp'
-		]
-	else:
-		source += [
-			'linuxfont.cpp'
-		]
 
 	includes = [
 		'.',
@@ -39,7 +32,7 @@ def build(bld):
 		'../../public/tier0',
 		'../../public/tier1',
 		'../../common',
-	] + bld.env.INCLUDES_FC + bld.env.INCLUDES_FT2
+	] + bld.env.INCLUDES_FT2
 
 	defines = []
 

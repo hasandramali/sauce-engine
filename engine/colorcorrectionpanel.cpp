@@ -345,7 +345,7 @@ public:
 class CColorOperationList
 {
 public:
-	CColorOperationList() = default;
+	CColorOperationList();
 
 	// Clears the list
 	void Clear();
@@ -374,6 +374,14 @@ public:
 private:
 	CUtlVector< IColorOperation* > m_OpList;
 };
+
+
+//-----------------------------------------------------------------------------
+// Constructor
+//-----------------------------------------------------------------------------
+CColorOperationList::CColorOperationList()
+{
+}
 
 
 //-----------------------------------------------------------------------------
@@ -4887,7 +4895,7 @@ void CColorOperationListPanel::PopulateList( )
 			KeyValues *kv = new KeyValues( "operation", "layer", op->GetName() );
 			kv->SetInt( "image", (op->IsEnabled())?1:0 );
 			
-			m_pOperationListPanel->AddItem( kv, (uintp)op, false, false );
+			m_pOperationListPanel->AddItem( kv, (unsigned int)op, false, false );
 		}
 	}
 }

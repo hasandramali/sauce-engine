@@ -4,6 +4,10 @@
 
 /* constructor / assignment */
 
+inline hk_Vector3::hk_Vector3()
+{
+}
+
 inline hk_Vector3::hk_Vector3(hk_real a, hk_real b, hk_real c)
 	: x(a), y(b), z(c)
 {

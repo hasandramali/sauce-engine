@@ -11,7 +11,7 @@
 #include "cbase.h"
 
 #ifdef POSIX
-#define HICON intp
+#define HICON int
 const int DT_LEFT = 1;
 const int DT_CENTER = 2;
 const int DT_RIGHT = 3;

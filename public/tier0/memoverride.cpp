@@ -145,11 +145,6 @@ inline void *ReallocUnattributed( void *pMem, size_t nSize )
 #define FREE_CALL
 #endif
 
-// check for noexcept in crt
-#ifndef _CRT_NOEXCEPT
-#define _CRT_NOEXCEPT
-#endif
-
 extern "C"
 {
 	
@@ -208,12 +203,12 @@ ALLOC_CALL void *_realloc_base( void *pMem, size_t nSize )
 	return ReallocUnattributed( pMem, nSize );
 }
 
-ALLOC_CALL void *_recalloc_base( void *pMem, size_t nCount, size_t nSize )
+ALLOC_CALL void *_recalloc_base( void *pMem, size_t nSize )
 {
-	void *pMemOut = ReallocUnattributed( pMem, nCount * nSize );
+	void *pMemOut = ReallocUnattributed( pMem, nSize );
 	if ( !pMem )
 	{
-		memset( pMemOut, 0, nCount * nSize);
+		memset( pMemOut, 0, nSize );
 	}
 	return pMemOut;
 }
@@ -247,7 +242,7 @@ void * __cdecl _realloc_crt(void *ptr, size_t size)
 
 void * __cdecl _recalloc_crt(void *ptr, size_t count, size_t size)
 {
-	return _recalloc_base( ptr, size, count );
+	return _recalloc_base( ptr, size * count );
 }
 
 ALLOC_CALL void * __cdecl _recalloc ( void * memblock, size_t count, size_t size )
@@ -260,7 +255,7 @@ ALLOC_CALL void * __cdecl _recalloc ( void * memblock, size_t count, size_t size
 	return pMem;
 }
 
-size_t _msize_base( void *pMem ) _CRT_NOEXCEPT
+size_t _msize_base( void *pMem )
 {
 	return g_pMemAlloc->GetSize(pMem);
 }

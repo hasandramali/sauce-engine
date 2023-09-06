@@ -470,7 +470,7 @@ bool CDedicatedSteamApplication::Create( )
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-#if !defined( POSIX ) && !defined( PLATFORM_64BITS )
+#ifndef POSIX
 	_asm
 	{
 		fninit

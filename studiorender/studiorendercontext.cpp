@@ -19,7 +19,6 @@
 #include "tier1/callqueue.h"
 #include "cmodel.h"
 #include "tier0/vprof.h"
-#include "tier1/memhelpers.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -897,13 +896,9 @@ void CStudioRenderContext::R_StudioBuildMeshStrips( studiomeshgroup_t* pMeshGrou
 	// Compute the amount of memory we need to store the strip data
 	int i;
 	int stripDataSize = 0;
-
-	size_t stripHdrSize = (pStripGroup->flags & OptimizedModel::STRIPGROUP_IS_MDL49)
-		? sizeof(OptimizedModel::StripHeader_v49_t) : sizeof(OptimizedModel::StripHeader_t);
-
 	for( i = 0; i < pStripGroup->numStrips; ++i )
 	{
-		stripDataSize += stripHdrSize;
+		stripDataSize += sizeof(OptimizedModel::StripHeader_t);
 		stripDataSize += pStripGroup->pStrip(i)->numBoneStateChanges *
 			sizeof(OptimizedModel::BoneStateChangeHeader_t);
 	}
@@ -911,14 +906,15 @@ void CStudioRenderContext::R_StudioBuildMeshStrips( studiomeshgroup_t* pMeshGrou
 	pMeshGroup->m_pStripData = (OptimizedModel::StripHeader_t*)malloc(stripDataSize);
 
 	// Copy over the strip info
-	int boneStateChangeOffset = pStripGroup->numStrips * stripHdrSize;
+	int boneStateChangeOffset = pStripGroup->numStrips * sizeof(OptimizedModel::StripHeader_t);
 	for( i = 0; i < pStripGroup->numStrips; ++i )
 	{
-		memcpy( &pMeshGroup->m_pStripData[i], pStripGroup->pStrip(i), stripHdrSize);
+		memcpy( &pMeshGroup->m_pStripData[i], pStripGroup->pStrip(i),
+			sizeof( OptimizedModel::StripHeader_t ) );
 
 		// Fixup the bone state change offset, since we have it right after the strip data
 		pMeshGroup->m_pStripData[i].boneStateChangeOffset = boneStateChangeOffset -
-			i * stripHdrSize;
+			i * sizeof(OptimizedModel::StripHeader_t);
 
 		// copy over bone state changes
 		int boneWeightSize = pMeshGroup->m_pStripData[i].numBoneStateChanges * 
@@ -1998,7 +1994,7 @@ void CStudioRenderContext::SetAmbientLightColors( const Vector *pColors )
 
 void CStudioRenderContext::SetAmbientLightColors( const Vector4D *pColors )
 {
-	memutils::copy( &m_RC.m_LightBoxColors[0], pColors, 6 );
+	memcpy( m_RC.m_LightBoxColors, pColors, 6 * sizeof(Vector4D) );
 
 	// FIXME: Would like to get this into the render thread, but there's systemic confusion
 	// about whether to set lighting state here or in the material system

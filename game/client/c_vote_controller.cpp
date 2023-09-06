@@ -30,7 +30,7 @@ END_RECV_TABLE()
 void C_VoteController::RecvProxy_VoteType( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	C_VoteController *pMe = (C_VoteController *)pStruct;
-	if( memcmp( &pMe->m_iActiveIssueIndex, &pData->m_Value.m_Int, sizeof(pData->m_Value.m_Int)) == 0 )
+	if( pMe->m_iActiveIssueIndex == pData->m_Value.m_Int )
 		return;
 
 	memcpy( &pMe->m_iActiveIssueIndex, &pData->m_Value.m_Int, sizeof(pData->m_Value.m_Int) );

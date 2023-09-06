@@ -1,3 +1,8 @@
+hk_Array_Base::hk_Array_Base()
+{
+}
+
+
 template <class T>
 hk_Array<T>::hk_Array( int initial_size )
 {

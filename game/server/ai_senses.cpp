@@ -49,9 +49,6 @@ struct AISightIterVal_t
 	char  array;
 	short iNext;
 	char  SeenArray;
-#ifdef PLATFORM_64BITS
-    uint32 unused;
-#endif
 };
 
 #pragma pack(pop)
@@ -275,7 +272,7 @@ CBaseEntity *CAI_Senses::GetFirstSeenEntity( AISightIter_t *pIter, seentype_t iS
 
 CBaseEntity *CAI_Senses::GetNextSeenEntity( AISightIter_t *pIter ) const	
 { 
-	if ( ((intp)*pIter) != -1 )
+	if ( ((int)*pIter) != -1 )
 	{
 		AISightIterVal_t *pIterVal = (AISightIterVal_t *)pIter;
 		
@@ -573,7 +570,7 @@ CSound* CAI_Senses::GetFirstHeardSound( AISoundIter_t *pIter )
 		return NULL;
 	}
 	
-	*pIter = (AISoundIter_t)(intp)iFirst;
+	*pIter = (AISoundIter_t)iFirst;
 	return CSoundEnt::SoundPointerForIndex( iFirst );
 }
 
@@ -584,7 +581,7 @@ CSound* CAI_Senses::GetNextHeardSound( AISoundIter_t *pIter )
 	if ( !*pIter )
 		return NULL;
 
-	intp iCurrent = (intp)*pIter;
+	int iCurrent = (int)*pIter;
 	
 	Assert( iCurrent != SOUNDLIST_EMPTY );
 	if ( iCurrent == SOUNDLIST_EMPTY )

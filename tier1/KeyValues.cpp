@@ -37,8 +37,8 @@
 static const char * s_LastFileLoadingFrom = "unknown"; // just needed for error messages
 
 // Statics for the growable string table
-intp (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &KeyValues::GetSymbolForStringClassic;
-const char *(*KeyValues::s_pfGetStringForSymbol)( intp symbol ) = &KeyValues::GetStringForSymbolClassic;
+int (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &KeyValues::GetSymbolForStringClassic;
+const char *(*KeyValues::s_pfGetStringForSymbol)( int symbol ) = &KeyValues::GetStringForSymbolClassic;
 CKeyValuesGrowableStringTable *KeyValues::s_pGrowableStringTable = NULL;
 
 #define KEYVALUES_TOKEN_SIZE	4096
@@ -63,7 +63,7 @@ public:
 
 	// entering a new keyvalues block, save state for errors
 	// Not save symbols instead of pointers because the pointers can move!
-	int Push( intp symName )
+	int Push( int symName )
 	{
 		if ( m_errorIndex < MAX_ERROR_STACK )
 		{
@@ -82,7 +82,7 @@ public:
 	}
 
 	// Allows you to keep the same stack level, but change the name as you parse peers
-	void Reset( int stackLevel, intp symName )
+	void Reset( int stackLevel, int symName )
 	{
 		Assert( stackLevel >= 0 );
 		Assert( stackLevel < m_errorIndex );
@@ -118,7 +118,7 @@ public:
 	}
 
 private:
-	intp		m_errorStack[MAX_ERROR_STACK];
+	int		m_errorStack[MAX_ERROR_STACK];
 	const char *m_pFilename;
 	int		m_errorIndex;
 	int		m_maxErrorIndex;
@@ -138,11 +138,11 @@ public:
 	{
 		g_KeyValuesErrorStack.Pop();
 	}
-	CKeyErrorContext( intp symName )
+	CKeyErrorContext( int symName )
 	{
 		Init( symName );
 	}
-	void Reset( intp symName )
+	void Reset( int symName )
 	{
 		g_KeyValuesErrorStack.Reset( m_stackLevel, symName );
 	}
@@ -151,7 +151,7 @@ public:
 		return m_stackLevel;
 	}
 private:
-	void Init( intp symName )
+	void Init( int symName )
 	{
 		m_stackLevel = g_KeyValuesErrorStack.Push( symName );
 	}
@@ -242,7 +242,7 @@ public:
 	}
 
 	// Translates a string to an index
-	intp GetSymbolForString( const char *name, bool bCreate = true )
+	int GetSymbolForString( const char *name, bool bCreate = true )
 	{
 		AUTO_LOCK( m_mutex );
 
@@ -273,7 +273,7 @@ public:
 	}
 
 	// Translates an index back to a string
-	const char *GetStringForSymbol( intp symbol )
+	const char *GetStringForSymbol( int symbol )
 	{
 		return (const char *)m_vecStrings.Base() + symbol;
 	}
@@ -292,7 +292,7 @@ private:
 		void SetCurStringBase( const char *pchCurBase ) { m_pchCurBase = pchCurBase; }
 
 		// The compare function.
-		bool operator()( intp nLhs, intp nRhs ) const
+		bool operator()( int nLhs, int nRhs ) const
 		{
 			const char *pchLhs = nLhs > 0 ? m_pchCurBase + nLhs : m_pchCurString;
 			const char *pchRhs = nRhs > 0 ? m_pchCurBase + nRhs : m_pchCurString;
@@ -313,7 +313,7 @@ private:
 
 	CThreadFastMutex m_mutex;
 	CLookupFunctor	m_Functor;
-	CUtlHash<intp, CLookupFunctor &, CLookupFunctor &> m_hashLookup;
+	CUtlHash<int, CLookupFunctor &, CLookupFunctor &> m_hashLookup;
 	CUtlVector<char> m_vecStrings;
 };
 
@@ -348,22 +348,22 @@ void KeyValues::SetUseGrowableStringTable( bool bUseGrowableTable )
 // Purpose: Bodys of the function pointers used for interacting with the key
 //	name string table
 //-----------------------------------------------------------------------------
-intp KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
+int KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
 {
 	return KeyValuesSystem()->GetSymbolForString( name, bCreate );
 }
 
-const char *KeyValues::GetStringForSymbolClassic( intp symbol )
+const char *KeyValues::GetStringForSymbolClassic( int symbol )
 {
 	return KeyValuesSystem()->GetStringForSymbol( symbol );
 }
 
-intp KeyValues::GetSymbolForStringGrowable( const char *name, bool bCreate )
+int KeyValues::GetSymbolForStringGrowable( const char *name, bool bCreate )
 {
 	return s_pGrowableStringTable->GetSymbolForString( name, bCreate );
 }
 
-const char *KeyValues::GetStringForSymbolGrowable( intp symbol )
+const char *KeyValues::GetStringForSymbolGrowable( int symbol )
 {
 	return s_pGrowableStringTable->GetStringForSymbol( symbol );
 }
@@ -970,7 +970,7 @@ void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, File
 //-----------------------------------------------------------------------------
 // Purpose: looks up a key by symbol name
 //-----------------------------------------------------------------------------
-KeyValues *KeyValues::FindKey(intp keySymbol) const
+KeyValues *KeyValues::FindKey(int keySymbol) const
 {
 	for (KeyValues *dat = m_pSub; dat != NULL; dat = dat->m_pPeer)
 	{
@@ -1425,7 +1425,7 @@ const char *KeyValues::GetString( const char *keyName, const char *defaultValue 
 			SetString( keyName, buf );
 			break;
 		case TYPE_PTR:
-			Q_snprintf( buf, sizeof( buf ), "%lld", (int64)dat->m_pValue );
+			Q_snprintf( buf, sizeof( buf ), "%lld", (int64)(size_t)dat->m_pValue );
 			SetString( keyName, buf );
 			break;
 		case TYPE_INT:
@@ -1478,7 +1478,7 @@ const wchar_t *KeyValues::GetWString( const char *keyName, const wchar_t *defaul
 			SetWString( keyName, wbuf);
 			break;
 		case TYPE_PTR:
-			swprintf( wbuf, Q_ARRAYSIZE(wbuf), L"%lld", (int64)dat->m_pValue );
+			swprintf( wbuf, Q_ARRAYSIZE(wbuf), L"%lld", (int64)(size_t)dat->m_pValue );
 			SetWString( keyName, wbuf );
 			break;
 		case TYPE_INT:
@@ -2179,34 +2179,6 @@ void KeyValues::RecursiveMergeKeyValues( KeyValues *baseKV )
 	}
 }
 
-static int s_nSteamDeckCached = -1;
-
-bool IsSteamDeck()
-{
-	if (s_nSteamDeckCached == -1) {
-		if ( CommandLine()->CheckParm( "-nogamepadui" ) != 0 )
-		{
-			s_nSteamDeckCached = 0;
-		}
-		else
-		{
-			if ( CommandLine()->CheckParm( "-gamepadui" ) != 0 )
-			{
-				s_nSteamDeckCached = 1;
-			}
-			else
-			{
-				char *deck = getenv("SteamDeck");
-				if ( deck == 0 || *deck == 0 )
-					s_nSteamDeckCached = 0;
-				else
-					s_nSteamDeckCached = atoi(deck) != 0;
-			}
-		}
-	}
-	return s_nSteamDeckCached;
-}
-
 //-----------------------------------------------------------------------------
 // Returns whether a keyvalues conditional evaluates to true or false
 // Needs more flexibility with conditionals, checking convars would be nice.
@@ -2223,8 +2195,8 @@ bool EvaluateConditional( const char *str )
 	if ( *str == '!' )
 		bNot = true;
 
-	if ( Q_stristr( str, "$DECK" ) )
-		return IsSteamDeck() ^ bNot;
+	if( Q_stristr( str, "$DECK" ) )
+		return false ^ bNot; // Steam deck unsupported
 
 	if ( Q_stristr( str, "$X360" ) )
 		return IsX360() ^ bNot;
@@ -2236,10 +2208,10 @@ bool EvaluateConditional( const char *str )
 		return IsWindows() ^ bNot;
 
 	if ( Q_stristr( str, "$OSX" ) )
-		return bNot;
+		return IsOSX() ^ bNot;
 
 	if ( Q_stristr( str, "$LINUX" ) )
-		return ( IsLinux() || IsBSD() || IsOSX() ) ^ bNot;
+		return IsLinux() ^ bNot;
 
 	if ( Q_stristr( str, "$POSIX" ) )
 		return IsPosix() ^ bNot;
@@ -2686,7 +2658,7 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 			}
 		case TYPE_PTR:
 			{
-				buffer.PutPtr( dat->m_pValue );
+				buffer.PutUnsignedInt( (int)dat->m_pValue );
 			}
 
 		default:
@@ -2790,7 +2762,7 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 			}
 		case TYPE_PTR:
 			{
-				dat->m_pValue = buffer.GetPtr();
+				dat->m_pValue = (void*)buffer.GetUnsignedInt();
 			}
 
 		default:

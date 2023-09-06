@@ -1487,7 +1487,7 @@ public:
 		return strcmp( *sz1, *sz2 );
 	}
 
-	CUtlStringList() = default;
+	CUtlStringList(){}
 
 	CUtlStringList( char const *pString, char const *pSeparator )
 	{

@@ -157,8 +157,7 @@ CGLMProgram::~CGLMProgram( )
 	GLMShaderDesc *glslDesc = &m_descs[kGLMGLSL];
 	if (glslDesc->m_object.glsl)
 	{
-		//gGL->glDeleteShader( (uint)glslDesc->m_object.glsl );	// why do I need a cast here again ?
-        gGL->glDeleteObjectARB( glslDesc->m_object.glsl ); // because you call the wrong api
+		gGL->glDeleteShader( (uint)glslDesc->m_object.glsl );	// why do I need a cast here again ?
 		glslDesc->m_object.glsl = 0;
 	}
 
@@ -815,7 +814,7 @@ void	CGLMProgram::LogSlow( EGLMProgramLang lang )
 				m_type==kGLMVertexProgram ? "VS" : "FS",
 				this,
 				lang==kGLMGLSL ? "GLSL" : "ARB",
-				(int)(lang==kGLMGLSL ? (intp)desc->m_object.glsl : (int)desc->m_object.arb),
+				(int)(lang==kGLMGLSL ? (int)desc->m_object.glsl : (int)desc->m_object.arb),
 				m_text
 		);
 #endif
@@ -829,7 +828,7 @@ void	CGLMProgram::LogSlow( EGLMProgramLang lang )
 					m_type==kGLMVertexProgram ? "VS" : "FS",
 					this,
 					lang==kGLMGLSL ? "GLSL" : "ARB",
-					(int)(lang==kGLMGLSL ? (intp)desc->m_object.glsl : (int)desc->m_object.arb),
+					(int)(lang==kGLMGLSL ? (int)desc->m_object.glsl : (int)desc->m_object.arb),
 					desc->m_slowMark+1
 			);
 		}
@@ -985,7 +984,7 @@ bool CGLMShaderPair::ValidateProgramPair()
 
 		if (m_valid)
 		{
-			gGL->glUseProgramObjectARB( m_program );
+			gGL->glUseProgram( m_program );
 
 			m_ctx->NewLinkedProgram();
 

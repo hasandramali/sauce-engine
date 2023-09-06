@@ -102,7 +102,7 @@ struct levellist_t
 
 struct EHandlePlaceholder_t // Engine does some of the game writing (alas, probably shouldn't), but can't see ehandle.h
 {
-	uintp i;
+	unsigned long i;
 };
 
 //-------------------------------------
@@ -278,7 +278,7 @@ private:
 
 		CHashElement( const CBaseEntity *pEntity, int index) : pEntity(pEntity), index(index) {}
 		CHashElement( const CBaseEntity *pEntity ) : pEntity(pEntity) {}
-		CHashElement() = default;
+		CHashElement() {}
 	};
 
 	class CHashFuncs
@@ -512,7 +512,7 @@ inline const char *CSaveRestoreSegment::StringFromSymbol( int token )
 ///             compilers. Either way, there's no portable intrinsic.
 
 // Newer GCC versions provide this in this header, older did by default.
-#if !defined( _rotr ) && defined( COMPILER_GCC ) && !defined( __arm__ ) && !defined( __aarch64__ )
+#if !defined( _rotr ) && defined( COMPILER_GCC ) && !defined( __arm__ )
 #include <x86intrin.h>
 #endif
 

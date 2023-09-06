@@ -69,8 +69,6 @@
 #define GL_ALPHA_TEST_FUNC_QCOM 0x0BC1
 #define GL_ALPHA_TEST_REF_QCOM 0x0BC2
 
-#define GLSL_VERSION "#version 300 es\n"
-
 extern void GLMDebugPrintf( const char *pMsg, ... );
 
 extern uint g_nTotalDrawsOrClears, g_nTotalVBLockBytes, g_nTotalIBLockBytes;
@@ -1367,7 +1365,7 @@ class GLMContext
 		void FlushDrawStatesNoShaders();
 				
 		// drawing
-#if 1 //ifndef OSX
+#ifndef OSX
 		FORCEINLINE void DrawRangeElements(	GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices, uint baseVertex, CGLMBuffer *pIndexBuf );
 		void DrawRangeElementsNonInline(	GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices, uint baseVertex, CGLMBuffer *pIndexBuf );
 #else
@@ -1450,7 +1448,7 @@ class GLMContext
 #endif
 
 		FORCEINLINE void SetMaxUsedVertexShaderConstantsHint( uint nMaxConstants );
-		FORCEINLINE uintp GetCurrentOwnerThreadId() const { return m_nCurOwnerThreadId; }
+		FORCEINLINE DWORD GetCurrentOwnerThreadId() const { return m_nCurOwnerThreadId; }
 								
 	protected:
 		friend class GLMgr;				// only GLMgr can make GLMContext objects
@@ -1575,7 +1573,7 @@ class GLMContext
 		// members------------------------------------------
 						
 		// context
-		uintp							m_nCurOwnerThreadId;
+		DWORD							m_nCurOwnerThreadId;
 		uint							m_nThreadOwnershipReleaseCounter;
 
 		bool							m_bUseSamplerObjects;
@@ -1817,7 +1815,7 @@ class GLMContext
 	CTSQueue<CGLMTex*> m_DeleteTextureQueue;
 };
 
-#if 1 //ifndef OSX
+#ifndef OSX
 
 FORCEINLINE void GLMContext::DrawRangeElements(	GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices, uint baseVertex, CGLMBuffer *pIndexBuf )
 {
@@ -1840,11 +1838,11 @@ FORCEINLINE void GLMContext::DrawRangeElements(	GLenum mode, GLuint start, GLuin
 	if ( pIndexBuf->m_bPseudo )
 	{
 		// you have to pass actual address, not offset
-		indicesActual = (void*)( (intp)indicesActual + (intp)pIndexBuf->m_pPseudoBuf );
+		indicesActual = (void*)( (int)indicesActual + (int)pIndexBuf->m_pPseudoBuf );
 	}
 	if (pIndexBuf->m_bUsingPersistentBuffer)
 	{
-		indicesActual = (void*)( (intp)indicesActual + (intp)pIndexBuf->m_nPersistentBufferStartOffset );
+		indicesActual = (void*)( (int)indicesActual + (int)pIndexBuf->m_nPersistentBufferStartOffset );
 	}
 
 //#if GLMDEBUG

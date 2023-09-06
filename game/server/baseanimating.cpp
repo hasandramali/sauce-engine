@@ -2553,7 +2553,7 @@ void CBaseAnimating::LockStudioHdr()
 
 			if ( pStudioHdrContainer && pStudioHdrContainer->GetVirtualModel() )
 			{
-				MDLHandle_t hVirtualModel = VoidPtrToMDLHandle( pStudioHdrContainer->GetRenderHdr()->VirtualModel() );
+				MDLHandle_t hVirtualModel = (MDLHandle_t)(int)(pStudioHdrContainer->GetRenderHdr()->virtualModel)&0xffff;
 				mdlcache->LockStudioHdr( hVirtualModel );
 			}
 			m_pStudioHdr = pStudioHdrContainer; // must be last to ensure virtual model correctly set up
@@ -2571,7 +2571,7 @@ void CBaseAnimating::UnlockStudioHdr()
 			mdlcache->UnlockStudioHdr( modelinfo->GetCacheHandle( mdl ) );
 			if ( m_pStudioHdr->GetVirtualModel() )
 			{
-				MDLHandle_t hVirtualModel = VoidPtrToMDLHandle( m_pStudioHdr->GetRenderHdr()->VirtualModel() );
+				MDLHandle_t hVirtualModel = (MDLHandle_t)(int)(m_pStudioHdr->GetRenderHdr()->virtualModel)&0xffff;
 				mdlcache->UnlockStudioHdr( hVirtualModel );
 			}
 		}
@@ -2743,9 +2743,8 @@ float CBaseAnimating::SetBoneController ( int iController, float flValue )
 
 	float newValue;
 	float retVal = Studio_SetController( pmodel, iController, flValue, newValue );
+	m_flEncodedController.Set( iController, newValue );
 
-	float &val = m_flEncodedController.GetForModify( iController );
-	val = newValue;
 	return retVal;
 }
 

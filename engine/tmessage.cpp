@@ -192,7 +192,7 @@ int ParseString( char const *pText, char *buf, size_t bufsize )
 		char const *pStart = pTemp;
 		pTemp = SkipText( pTemp );
 
-        intp len =  min( pTemp - pStart + 1, (ptrdiff_t)bufsize - 1 );
+		int len =  min( pTemp - pStart + 1, (int)bufsize - 1 );
 		Q_strncpy( buf, pStart, len );
 		buf[ len ] = 0;
 		return 1;
@@ -322,17 +322,10 @@ int ParseDirective( const char *pText )
 		{
 			if ( ParseFloats( pText, tempFloat, 4 ) )
 			{
-				// that's original code, msvc2015 generates illegal instruction on amd64 architecture
-				/*for ( int i = 0; i < 4; ++i )
+				for ( int i = 0; i < 4; ++i )
 				{
 					gMessageParms.boxcolor[ i ] = (byte)(int)tempFloat[ i ];
-				}*/
-
-				// workaround
-				gMessageParms.boxcolor[0] = (int)tempFloat[0];
-				gMessageParms.boxcolor[1] = (int)tempFloat[1];
-				gMessageParms.boxcolor[2] = (int)tempFloat[2];
-				gMessageParms.boxcolor[3] = (int)tempFloat[3];
+				}
 			}
 		}
 		else if ( IsToken( pText, "clearmessage" ) )
@@ -374,8 +367,7 @@ void TextMessageParse( byte *pMemFile, int fileSize )
 
 	client_textmessage_t	textMessages[ MAX_MESSAGES ];
 	
-	int			i, nameHeapSize, textHeapSize, messageSize;
-	intp nameOffset;
+	int			i, nameHeapSize, textHeapSize, messageSize, nameOffset;
 
 	lastNamePos = 0;
 	lineNumber = 0;

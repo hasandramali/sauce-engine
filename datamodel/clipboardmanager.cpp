@@ -8,7 +8,7 @@
 #include "datamodel.h"
 #include "tier1/KeyValues.h"
 
-#ifdef _WIN32
+#ifndef _LINUX
 #define USE_WINDOWS_CLIPBOARD
 #endif
 

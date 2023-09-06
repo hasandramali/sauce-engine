@@ -249,7 +249,7 @@ struct ikcontextikrule_t
 	Vector		kneeDir;
 	Vector		kneePos;
 
-	ikcontextikrule_t() = default;
+	ikcontextikrule_t() {}
 
 private:
 	// No copy constructors allowed

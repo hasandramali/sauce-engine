@@ -6,6 +6,7 @@
 //=============================================================================//
 
 #include <stdlib.h>
+#include <malloc.h>
 #include <string.h>
 #include "materialsystem/imaterialproxy.h"
 #include "materialproxyfactory.h"

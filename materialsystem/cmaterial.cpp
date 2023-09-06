@@ -17,11 +17,7 @@
 #include "materialsystem/imaterialproxyfactory.h"
 #include "IHardwareConfigInternal.h"
 #include "utlsymbol.h"
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #include "filesystem.h"
 #include <KeyValues.h>
 #include "mempool.h"
@@ -1194,10 +1190,6 @@ bool CMaterial::ShouldSkipVar( KeyValues *pVar, bool *pWasConditional )
 		else if ( ! stricmp( pCond, "360" ) )
 		{
 			bShouldSkip = !IsX360();
-		}
-		else if ( ! stricmp( pCond, "gameconsole" ) )
-		{
-			bShouldSkip = !IsGameConsole();
 		}
 		else
 		{

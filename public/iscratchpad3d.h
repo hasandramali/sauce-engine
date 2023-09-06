@@ -54,7 +54,7 @@ public:
 class CSPVert
 {
 public:
-				CSPVert() = default;
+				CSPVert();
 				CSPVert( Vector const &vPos, const CSPColor &vColor=CSPColor( Vector(1, 1, 1), 1 ) );
 	
 	void		Init( Vector const &vPos, const CSPColor &vColor=CSPColor( Vector(1, 1, 1), 1 ) );
@@ -252,6 +252,10 @@ inline CTextParams::CTextParams()
 	m_vAngles.Init();
 	m_bTwoSided = true;
 	m_flLetterWidth = 3;
+}
+
+inline CSPVert::CSPVert()
+{
 }
 
 inline CSPVert::CSPVert( Vector const &vPos, const CSPColor &vColor )

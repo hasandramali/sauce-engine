@@ -52,7 +52,7 @@ public:
 
 struct AI_NearNode_t
 {
-	AI_NearNode_t() = default;
+	AI_NearNode_t() {}
 	AI_NearNode_t( int index, float nodedist ) { dist = nodedist; nodeIndex = index; }
 	float	dist;
 	int		nodeIndex;
@@ -84,13 +84,11 @@ public:
 // Purpose: Stores a node graph through which an AI may pathfind
 //-----------------------------------------------------------------------------
 
-class CAI_Network : public IPartitionEnumerator, public IEntityListener
+class CAI_Network : public IPartitionEnumerator
 {
 public:
 	CAI_Network();
 	~CAI_Network();
-
-	void OnEntityDeleted( CBaseEntity *pEntity );
 
 	CAI_Node *		AddNode( const Vector &origin, float yaw );						// Returns a new node in the network
 	CAI_Link *		CreateLink( int srcID, int destID, CAI_DynamicLink *pDynamicLink = NULL );
@@ -129,8 +127,6 @@ public:
 	}
 	
 	CAI_Node**		AccessNodes() const	{ return m_pAInode; }
-	
-
 	
 private:
 	friend class CAI_NetworkManager;

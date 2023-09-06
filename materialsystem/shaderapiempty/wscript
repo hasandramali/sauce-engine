@@ -19,8 +19,7 @@ def configure(conf):
 
 def build(bld):
 	source = [
-		'shaderapiempty.cpp',
-		'../../public/tier0/memoverride.cpp'
+		'shaderapiempty.cpp'
 	]
 
 	includes = [

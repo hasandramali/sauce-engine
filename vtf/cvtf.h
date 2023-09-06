@@ -21,7 +21,7 @@
 class CEdgePos
 {
 public:
-	CEdgePos() = default;
+	CEdgePos() {}
 	CEdgePos( int ix, int iy )
 	{
 		x = ix;

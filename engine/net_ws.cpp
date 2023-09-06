@@ -13,7 +13,6 @@
 #include "net_ws_headers.h"
 #include "net_ws_queued_packet_sender.h"
 #include "fmtstr.h"
-#include "master.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -418,7 +417,7 @@ bool NET_StringToAdr ( const char *s, netadr_t *a)
 
 CNetChan *NET_FindNetChannel(int socket, netadr_t &adr)
 {
-	AUTO_LOCK_FM( s_NetChannels );
+	AUTO_LOCK( s_NetChannels );
 
 	int numChannels = s_NetChannels.Count();
 
@@ -799,7 +798,7 @@ INetChannel *NET_CreateNetChannel(int socket, netadr_t *adr, const char * name, 
 		// create new channel
 		chan = new CNetChan();
 
-		AUTO_LOCK_FM( s_NetChannels );
+		AUTO_LOCK( s_NetChannels );
 		s_NetChannels.AddToTail( chan );
 	}
 
@@ -818,7 +817,7 @@ void NET_RemoveNetChannel(INetChannel *netchan, bool bDeleteNetChan)
 		return;
 	}
 
-	AUTO_LOCK_FM( s_NetChannels );
+	AUTO_LOCK( s_NetChannels );
 	if ( s_NetChannels.Find( static_cast<CNetChan*>(netchan) ) == s_NetChannels.InvalidIndex() )
 	{
 		DevMsg(1, "NET_CloseNetChannel: unknown channel.\n");
@@ -1645,7 +1644,7 @@ netpacket_t *NET_GetPacket (int sock, byte *scratch )
 	// Check loopback first
 	if ( !NET_GetLoopPacket( &inpacket ) )
 	{
-		if ( !NET_IsMultiplayer() && sock != NS_CLIENT )
+		if ( !NET_IsMultiplayer() )
 		{
 			return NULL;
 		}
@@ -1678,7 +1677,7 @@ netpacket_t *NET_GetPacket (int sock, byte *scratch )
 
 void NET_ProcessPending( void )
 {
-	AUTO_LOCK_FM( s_PendingSockets );
+	AUTO_LOCK( s_PendingSockets );
 	for ( int i=0; i<s_PendingSockets.Count();i++ )
 	{
 		pendingsocket_t * psock = &s_PendingSockets[i];
@@ -1713,7 +1712,7 @@ void NET_ProcessPending( void )
 
 		if ( cmd == STREAM_CMD_ACKN )
 		{
-			AUTO_LOCK_FM( s_NetChannels );
+			AUTO_LOCK( s_NetChannels );
 			for ( int j = 0; j < s_NetChannels.Count(); j++ )
 			{
 				CNetChan * chan = s_NetChannels[j];
@@ -1793,7 +1792,7 @@ void NET_ProcessListen(int sock)
 	psock.addr.SetFromSockadr( &sa );
 	psock.time = net_time;
 
-	AUTO_LOCK_FM( s_PendingSockets );
+	AUTO_LOCK( s_PendingSockets );
 	s_PendingSockets.AddToTail( psock );
 
 	// tell client to send challenge number to identify
@@ -1824,7 +1823,7 @@ void NET_ProcessSocket( int sock, IConnectionlessPacketHandler *handler )
 
 	// Scope for the auto_lock
 	{
-		AUTO_LOCK_FM( s_NetChannels );
+		AUTO_LOCK( s_NetChannels );
 
 		// get streaming data from channel sockets
 		int numChannels = s_NetChannels.Count();
@@ -2352,7 +2351,7 @@ int NET_SendPacket ( INetChannel *chan, int sock,  const netadr_t &to, const uns
 		Msg("UDP -> %s: sz=%i OOB '%c'\n", to.ToString(), length, data[4] );
 	}
 
-	if ( (!NET_IsMultiplayer() && sock != NS_CLIENT) || to.type == NA_LOOPBACK || ( to.IsLocalhost() && !net_usesocketsforloopback.GetBool() ) )
+	if ( !NET_IsMultiplayer() || to.type == NA_LOOPBACK || ( to.IsLocalhost() && !net_usesocketsforloopback.GetBool() ) )
 	{
 		Assert( !pVoicePayload );
 
@@ -2554,7 +2553,7 @@ void NET_CloseAllSockets (void)
 	}
 
 	// shut down all pending sockets
-	AUTO_LOCK_FM( s_PendingSockets );
+	AUTO_LOCK( s_PendingSockets );
 	for(int j=0; j<s_PendingSockets.Count();j++ )
 	{
 		NET_CloseSocket( s_PendingSockets[j].newsock );
@@ -2837,7 +2836,7 @@ void NET_LogServerStatus( void )
 		return;
 	}
 
-	AUTO_LOCK_FM( s_NetChannels );
+	AUTO_LOCK( s_NetChannels );
 	int numChannels = s_NetChannels.Count();
 
 	if ( numChannels == 0 )
@@ -2989,8 +2988,6 @@ void NET_RunFrame( double flRealtime )
 
 #endif // SWDS
 
-	master->RunFrame();
-
 #ifdef _X360
 	if ( net_logserver.GetInt() )
 	{
@@ -3113,7 +3110,7 @@ void NET_ListenSocket( int sock, bool bListen )
 		NET_CloseSocket( netsock->hTCP, sock );
 	}
 
-	if ( (!NET_IsMultiplayer() && sock != NS_CLIENT) || net_notcp )
+	if ( !NET_IsMultiplayer() || net_notcp )
 		return;
 
 	if ( bListen )
@@ -3299,11 +3296,6 @@ void NET_Init( bool bIsDedicated )
 		ipname.SetValue( ip );  // update the cvar right now, this will get overwritten by "stuffcmds" later
 	}
 
-	const int nProtocol = X360SecureNetwork() ? IPPROTO_VDP : IPPROTO_UDP;
-
-	// open client socket for masterserver
-	OpenSocketInternal( NS_CLIENT, clientport.GetInt(), PORT_SERVER, "client", nProtocol, true );
-
 	if ( bIsDedicated )
 	{
 		// set dedicated MP mode
@@ -3384,7 +3376,7 @@ CON_COMMAND( net_channels, "Shows net channel info" )
 		return;
 	}
 
-	AUTO_LOCK_FM( s_NetChannels );
+	AUTO_LOCK( s_NetChannels );
 	for ( int i = 0; i < numChannels; i++ )
 	{
 		NET_PrintChannelStatus( s_NetChannels[i] );
@@ -3399,7 +3391,7 @@ CON_COMMAND( net_start, "Inits multiplayer network sockets" )
 
 CON_COMMAND( net_status, "Shows current network status" )
 {
-	AUTO_LOCK_FM( s_NetChannels );
+	AUTO_LOCK( s_NetChannels );
 	int numChannels = s_NetChannels.Count();
 
 	ConMsg("Net status for host %s:\n", 

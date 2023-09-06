@@ -259,8 +259,10 @@ private:
 class CWorldListCache
 {
 public:
-	CWorldListCache() = default;
+	CWorldListCache()
+	{
 
+	}
 	void Flush()
 	{
 		for ( int i = m_Entries.FirstInorder(); i != m_Entries.InvalidIndex(); i = m_Entries.NextInorder( i ) )

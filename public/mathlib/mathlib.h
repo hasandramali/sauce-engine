@@ -30,6 +30,7 @@
 // FP exception clean so this not a turnkey operation.
 //#define FP_EXCEPTIONS_ENABLED
 
+
 #ifdef FP_EXCEPTIONS_ENABLED
 #include <float.h> // For _clearfp and _controlfp_s
 #endif
@@ -92,11 +93,37 @@ private:
 	FPExceptionEnabler& operator=(const FPExceptionEnabler&);
 };
 
-inline float clamp( const float val, const float minVal, const float maxVal )
+
+
+#ifdef DEBUG  // stop crashing edit-and-continue
+FORCEINLINE float clamp( float val, float minVal, float maxVal )
 {
-	const float t = val < minVal ? minVal : val;
-	return t > maxVal ? maxVal : t;
+	if ( maxVal < minVal )
+		return maxVal;
+	else if( val < minVal )
+		return minVal;
+	else if( val > maxVal )
+		return maxVal;
+	else
+		return val;
 }
+#else // DEBUG
+FORCEINLINE float clamp( float val, float minVal, float maxVal )
+{
+#if defined(__i386__) || defined(_M_IX86)
+	_mm_store_ss( &val,
+		_mm_min_ss(
+			_mm_max_ss(
+				_mm_load_ss(&val),
+				_mm_load_ss(&minVal) ),
+			_mm_load_ss(&maxVal) ) );
+#else
+	val = fpmax(minVal, val);
+	val = fpmin(maxVal, val);
+#endif
+	return val;
+}
+#endif // DEBUG
 
 //
 // Returns a clamped value in the range [min, max].
@@ -104,9 +131,16 @@ inline float clamp( const float val, const float minVal, const float maxVal )
 template< class T >
 inline T clamp( T const &val, T const &minVal, T const &maxVal )
 {
-	const T t = val< minVal ? minVal : val;
-	return t > maxVal ? maxVal : t;
+	if ( maxVal < minVal )
+		return maxVal;
+	else if( val < minVal )
+		return minVal;
+	else if( val > maxVal )
+		return maxVal;
+	else
+		return val;
 }
+
 
 // plane_t structure
 // !!! if this is changed, it must be changed in asm code too !!!
@@ -114,7 +148,7 @@ inline T clamp( T const &val, T const &minVal, T const &maxVal )
 // FIXME: this should move to a different file
 struct cplane_t
 {
-	VectorAligned	normal;
+	Vector	normal;
 	float	dist;
 	byte	type;			// for fast side tests
 	byte	signbits;		// signx + (signy<<1) + (signz<<1)
@@ -203,8 +237,8 @@ bool R_CullBoxSkipNear( const Vector& mins, const Vector& maxs, const Frustum_t 
 
 struct matrix3x4_t
 {
-	inline matrix3x4_t() = default;
-	inline matrix3x4_t(
+	matrix3x4_t() {}
+	matrix3x4_t( 
 		float m00, float m01, float m02, float m03,
 		float m10, float m11, float m12, float m13,
 		float m20, float m21, float m22, float m23 )
@@ -218,7 +252,7 @@ struct matrix3x4_t
 	// Creates a matrix where the X axis = forward
 	// the Y axis = left, and the Z axis = up
 	//-----------------------------------------------------------------------------
-	inline void Init( const Vector& xAxis, const Vector& yAxis, const Vector& zAxis, const Vector &vecOrigin )
+	void Init( const Vector& xAxis, const Vector& yAxis, const Vector& zAxis, const Vector &vecOrigin )
 	{
 		m_flMatVal[0][0] = xAxis.x; m_flMatVal[0][1] = yAxis.x; m_flMatVal[0][2] = zAxis.x; m_flMatVal[0][3] = vecOrigin.x;
 		m_flMatVal[1][0] = xAxis.y; m_flMatVal[1][1] = yAxis.y; m_flMatVal[1][2] = zAxis.y; m_flMatVal[1][3] = vecOrigin.y;
@@ -229,23 +263,26 @@ struct matrix3x4_t
 	// Creates a matrix where the X axis = forward
 	// the Y axis = left, and the Z axis = up
 	//-----------------------------------------------------------------------------
-	inline matrix3x4_t( const Vector& xAxis, const Vector& yAxis, const Vector& zAxis, const Vector &vecOrigin )
+	matrix3x4_t( const Vector& xAxis, const Vector& yAxis, const Vector& zAxis, const Vector &vecOrigin )
 	{
 		Init( xAxis, yAxis, zAxis, vecOrigin );
 	}
 
 	inline void Invalidate( void )
 	{
-		for( int i=0; i < 12; i++ )
+		for (int i = 0; i < 3; i++)
 		{
-			((float*)m_flMatVal)[i] = VEC_T_NAN;
+			for (int j = 0; j < 4; j++)
+			{
+				m_flMatVal[i][j] = VEC_T_NAN;
+			}
 		}
 	}
 
-	inline float *operator[]( int i )				{ Assert(( i >= 0 ) && ( i < 3 )); return m_flMatVal[i]; }
-	inline const float *operator[]( int i ) const	{ Assert(( i >= 0 ) && ( i < 3 )); return m_flMatVal[i]; }
-	inline float *Base()							{ return &m_flMatVal[0][0]; }
-	inline const float *Base() const				{ return &m_flMatVal[0][0]; }
+	float *operator[]( int i )				{ Assert(( i >= 0 ) && ( i < 3 )); return m_flMatVal[i]; }
+	const float *operator[]( int i ) const	{ Assert(( i >= 0 ) && ( i < 3 )); return m_flMatVal[i]; }
+	float *Base()							{ return &m_flMatVal[0][0]; }
+	const float *Base() const				{ return &m_flMatVal[0][0]; }
 
 	float m_flMatVal[3][4];
 };
@@ -420,8 +457,6 @@ void inline SinCos( float radians, float *sine, float *cosine )
 #elif defined( PLATFORM_WINDOWS_PC64 )
 	*sine = sin( radians );
 	*cosine = cos( radians );
-#elif defined( OSX )
-    __sincosf(radians, sine, cosine);
 #elif defined( POSIX )
 	sincosf(radians, sine, cosine);
 #endif
@@ -528,13 +563,7 @@ void MatrixInvert( const matrix3x4_t &in, matrix3x4_t &out );
 bool MatricesAreEqual( const matrix3x4_t &src1, const matrix3x4_t &src2, float flTolerance = 1e-5 );
 
 void MatrixGetColumn( const matrix3x4_t &in, int column, Vector &out );
-
-inline void MatrixSetColumn( const Vector &in, int column, matrix3x4_t& out )
-{
-	out[0][column] = in.x;
-	out[1][column] = in.y;
-	out[2][column] = in.z;
-}
+void MatrixSetColumn( const Vector &in, int column, matrix3x4_t &out );
 
 inline void MatrixGetTranslation( const matrix3x4_t &in, Vector &out )
 {
@@ -1048,19 +1077,7 @@ void VectorYawRotate( const Vector& in, float flYaw, Vector &out);
 // 0                   1
 //
 // With a biasAmt of 0.5, Bias returns X.
-inline float Bias( float x, float biasAmt )
-{
-	// WARNING: not thread safe
-	static float lastAmt = -1;
-	static float lastExponent = 0;
-	if( lastAmt != biasAmt )
-	{
-		lastExponent = log( biasAmt ) * -1.4427f; // (-1.4427 = 1 / log(0.5))
-	}
-	float fRet = pow( x, lastExponent );
-	Assert ( !IS_NAN( fRet ) );
-	return fRet;
-}
+float Bias( float x, float biasAmt );
 
 
 // Gain is similar to Bias, but biasAmt biases towards or away from 0.5.
@@ -1092,14 +1109,9 @@ inline float Bias( float x, float biasAmt )
 // |*****
 // |___________________
 // 0                   1
-inline float Gain( float x, float biasAmt )
-{
-	// WARNING: not thread safe
-	if( x < 0.5 )
-		return 0.5f * Bias( 2*x, 1-biasAmt );
-	else
-		return 1 - 0.5f * Bias( 2 - 2*x, 1-biasAmt );
-}
+float Gain( float x, float biasAmt );
+
+
 // SmoothCurve maps a 0-1 value into another 0-1 value based on a cosine wave
 // where the derivatives of the function at 0 and 1 (and 0.5) are 0. This is useful for
 // any fadein/fadeout effect where it should start and end smoothly.
@@ -1201,7 +1213,7 @@ FORCEINLINE int RoundFloatToInt(float f)
 	};
 	flResult = __fctiw( f );
 	return pResult[1];
-#elif defined (__arm__) ||  defined (__aarch64__)
+#elif defined (__arm__)
         return (int)(f + 0.5f);
 #else
 #error Unknown architecture
@@ -1233,7 +1245,7 @@ FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 	Assert( pIntResult[1] >= 0 );
 	return pResult[1];
 #else  // !X360
-#if defined(__arm__) || defined(__aarch64__)
+#ifdef __arm__
         return (unsigned long)(f + 0.5f);
 #elif defined( PLATFORM_WINDOWS_PC64 )
 	uint nRet = ( uint ) f;
@@ -2156,7 +2168,7 @@ inline bool CloseEnough( const Vector &a, const Vector &b, float epsilon = EQUAL
 // Fast compare
 // maxUlps is the maximum error in terms of Units in the Last Place. This 
 // specifies how big an error we are willing to accept in terms of the value
-// of the least significant digit of the floating point numberï¿½s 
+// of the least significant digit of the floating point number’s 
 // representation. maxUlps can also be interpreted in terms of how many 
 // representable floats we are willing to accept between A and B. 
 // This function will allow maxUlps-1 floats between A and B.

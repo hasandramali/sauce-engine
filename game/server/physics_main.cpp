@@ -8,7 +8,7 @@
 
 #include "cbase.h"
 #ifdef _WIN32
-#include "typeinfo"
+#include "typeinfo.h"
 // BUGBUG: typeinfo stomps some of the warning settings (in yvals.h)
 #pragma warning(disable:4244)
 #elif POSIX

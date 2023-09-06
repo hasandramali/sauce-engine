@@ -9,6 +9,7 @@
 
 //#include <stdafx.h>
 #include <stdlib.h>
+#include <malloc.h>
 #include "builddisp.h"
 #include "collisionutils.h"
 #include "tier1/strtools.h"
@@ -840,9 +841,9 @@ void CCoreDispInfo::InitDispInfo( int power, int minTess, float smoothingAngle,
 void CCoreDispInfo::InitDispInfo( int power, int minTess, float smoothingAngle, const CDispVert *pVerts,
 								  const CDispTri *pTris )
 {
-	static Vector vectors[MAX_DISPVERTS];
-	static float dists[MAX_DISPVERTS];
-	static float alphas[MAX_DISPVERTS];
+	Vector vectors[MAX_DISPVERTS];
+	float dists[MAX_DISPVERTS];
+	float alphas[MAX_DISPVERTS];
 
 	int nVerts = NUM_DISP_POWER_VERTS( power );
 	for ( int i=0; i < nVerts; i++ )

@@ -32,6 +32,7 @@
 #endif
 #include "colorspace.h"
 #include "string.h"
+#include <malloc.h>
 #include <stdlib.h>
 #include "utlmemory.h"
 #include "IHardwareConfigInternal.h"
@@ -2458,8 +2459,15 @@ bool CTexture::AsyncReadTextureFromFile( IVTFTexture* pVTFTexture, unsigned int 
 		return false;
 	}
 
-	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s - %s", __FUNCTION__, tmDynamicString( TELEMETRY_LEVEL0, pCacheFileName ) );
+	if ( V_strstr( GetName(), "c_sniperrifle_scope" ) )
+	{
+		int i = 0;
+		i = 3;
+	}
 
+
+	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s - %s", __FUNCTION__, tmDynamicString( TELEMETRY_LEVEL0, pCacheFileName ) );
+	
 	// OSX hackery
 	int nPreserveFlags = nAdditionalCreationFlags;
 	if ( m_nFlags & TEXTUREFLAGS_SRGB )
@@ -2569,7 +2577,7 @@ bool CTexture::SetRenderTarget( int nRenderTargetID, ITexture *pDepthTexture )
 
 	ShaderAPITextureHandle_t textureHandle = m_pTextureHandles[0];
 
-	ShaderAPITextureHandle_t depthTextureHandle = (uintp)SHADER_RENDERTARGET_DEPTHBUFFER;
+	ShaderAPITextureHandle_t depthTextureHandle = (unsigned int)SHADER_RENDERTARGET_DEPTHBUFFER;
 
 	if ( m_nFlags & TEXTUREFLAGS_DEPTHRENDERTARGET )
 	{
@@ -2579,7 +2587,7 @@ bool CTexture::SetRenderTarget( int nRenderTargetID, ITexture *pDepthTexture )
 	else if ( m_nFlags & TEXTUREFLAGS_NODEPTHBUFFER )
 	{
 		// GR - render target without depth buffer	
-		depthTextureHandle = (uintp)SHADER_RENDERTARGET_NONE;
+		depthTextureHandle = (unsigned int)SHADER_RENDERTARGET_NONE;
 	}
 
 	if ( pDepthTexture)
@@ -4032,7 +4040,7 @@ void CTexture::DeleteIfUnreferenced()
 	if ( ThreadInMainThread() )
 	{
 		// Render thread better not be active or bad things can happen.
-		Assert( MaterialSystem()->GetRenderThreadId() == (uintp)-1 );
+		Assert( MaterialSystem()->GetRenderThreadId() == 0xFFFFFFFF );
 		TextureManager()->RemoveTexture( this );
 		return;
 	}
@@ -4132,7 +4140,7 @@ bool CTexture::UpdateExcludedState( void )
 
 void CTextureStreamingJob::OnAsyncFindComplete( ITexture* pTex, void* pExtraArgs )
 {
-	const intp cArgsAsInt = ( intp ) pExtraArgs;
+	const int cArgsAsInt = ( int ) pExtraArgs;
 
 	Assert( m_pOwner == NULL || m_pOwner == pTex );
 	if ( m_pOwner )
@@ -4181,6 +4189,12 @@ bool SLoadTextureBitsFromFile( IVTFTexture **ppOutVtfTexture, FileHandle_t hFile
 	// NOTE! NOTE! NOTE! implications. It can be called synchronously by the Main thread, 
 	// NOTE! NOTE! NOTE! or by the streaming texture code!
 	Assert( ppOutVtfTexture != NULL && *ppOutVtfTexture != NULL );
+
+	if ( V_strstr( pName, "c_rocketlauncher/c_rocketlauncher" ) )
+	{
+		int i = 0;
+		i = 3;
+	}
 
 	CUtlBuffer buf;
 

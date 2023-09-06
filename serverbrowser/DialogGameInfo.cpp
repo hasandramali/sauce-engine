@@ -293,10 +293,7 @@ void CDialogGameInfo::PerformLayout()
 	}
 	SetControlString("PlayersText", buf);
 
-	SetControlString("ServerIPText", m_Server.m_NetAdr.GetConnectionAddressString() );
-	m_pConnectButton->SetEnabled(true);
-
-/*	if ( m_Server.m_NetAdr.GetIP() && m_Server.m_NetAdr.GetQueryPort() )
+	if ( m_Server.m_NetAdr.GetIP() && m_Server.m_NetAdr.GetQueryPort() )
 	{
 		SetControlString("ServerIPText", m_Server.m_NetAdr.GetConnectionAddressString() );
 		m_pConnectButton->SetEnabled(true);
@@ -315,7 +312,7 @@ void CDialogGameInfo::PerformLayout()
 	{
 		SetControlString("ServerIPText", "");
 		m_pConnectButton->SetEnabled(false);
-	}*/
+	}
 
 	if ( m_Server.m_bHadSuccessfulResponse )
 	{
@@ -408,11 +405,7 @@ void CDialogGameInfo::OnConnect()
 
 	// need to refresh server before attempting to connect, to make sure there is enough room on the server
 	m_iRequestRetry = 0;
-
-	ConnectToServer();
-
-	//TODO(nillerusr): restore this later
-	//RequestInfo();
+	RequestInfo();
 }
 
 //-----------------------------------------------------------------------------
@@ -640,6 +633,17 @@ void CDialogGameInfo::ConnectToServer()
 {
 	m_bConnecting = false;
 
+	// check VAC status
+	if ( m_Server.m_bSecure && ServerBrowser().IsVACBannedFromGame( m_Server.m_nAppID ) )
+	{
+		// refuse the user
+		CVACBannedConnRefusedDialog *pDlg = new CVACBannedConnRefusedDialog( GetVParent(), "VACBannedConnRefusedDialog" );
+		pDlg->Activate();
+		Close();
+		return;
+	}
+
+
 	// check to see if we need a password
 	if ( m_Server.m_bPassword && !m_szPassword[0] )
 	{
@@ -650,9 +654,7 @@ void CDialogGameInfo::ConnectToServer()
 	}
 
 	// check the player count
-
-	// nillerusr
-	/*if ( m_Server.m_nPlayers >= m_Server.m_nMaxPlayers )
+	if ( m_Server.m_nPlayers >= m_Server.m_nMaxPlayers )
 	{
 		// mark why we cannot connect
 		m_bServerFull = true;
@@ -660,7 +662,7 @@ void CDialogGameInfo::ConnectToServer()
 		m_bShowAutoRetryToggle = true;
 		InvalidateLayout();
 		return;
-	}*/
+	}
 
 	// tell the engine to connect
 	const char *gameDir = m_Server.m_szGameDir;

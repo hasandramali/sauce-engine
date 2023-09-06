@@ -32,7 +32,7 @@ extern INetworkStringTable *g_pStringTableInfoPanel;
 
 #define TEMP_HTML_FILE	"textwindow_temp.html"
 
-ConVar cl_disablehtmlmotd( "cl_disablehtmlmotd", "1", FCVAR_ARCHIVE, "Disable HTML motds." );
+ConVar cl_disablehtmlmotd( "cl_disablehtmlmotd", "0", FCVAR_ARCHIVE, "Disable HTML motds." );
 
 //=============================================================================
 // HPE_BEGIN:
@@ -129,8 +129,7 @@ void CTextWindow::ApplySchemeSettings( IScheme *pScheme )
 CTextWindow::~CTextWindow()
 {
 	// remove temp file again
-	if (g_pFullFileSystem->FileExists(TEMP_HTML_FILE))
-		g_pFullFileSystem->RemoveFile( TEMP_HTML_FILE, "DEFAULT_WRITE_PATH" );
+	g_pFullFileSystem->RemoveFile( TEMP_HTML_FILE, "DEFAULT_WRITE_PATH" );
 }
 
 void CTextWindow::Reset( void )

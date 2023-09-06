@@ -38,20 +38,11 @@
 #define XBOX_CODELINE_ONLY() Error_Compiling_Code_Only_Valid_in_Xbox_Codeline
 #endif
 
-
-#if !defined(PLATFORM_GLIBC) && defined(LINUX) // fuck musl
-#ifdef nullptr
-#undef nullptr
-#endif
-#define nullptr 0
-#endif
-
-
 // stdio.h
-#if !defined( NULL ) || defined( PLATFORM_BSD )
-#undef NULL
+#ifndef NULL
 #define NULL 0
 #endif
+
 
 #ifdef POSIX
 #include <stdint.h>
@@ -180,24 +171,17 @@ typedef float vec_t;
 // This assumes the ANSI/IEEE 754-1985 standard
 //-----------------------------------------------------------------------------
 
-// MoeMod : fix reinterpret_cast UB - Maybe fail with strict alias
-union FloatCast_u
+inline unsigned long& FloatBits( vec_t& f )
 {
-    vec_t f;
-    unsigned int i;
-};
-
-inline unsigned int& FloatBits( vec_t& f )
-{
-	return reinterpret_cast<FloatCast_u *>(&f)->i;
+	return *reinterpret_cast<unsigned long*>(&f);
 }
 
-inline unsigned int const& FloatBits( vec_t const& f )
+inline unsigned long const& FloatBits( vec_t const& f )
 {
-	return reinterpret_cast<FloatCast_u const*>(&f)->i;
+	return *reinterpret_cast<unsigned long const*>(&f);
 }
 
-inline vec_t BitsToFloat( unsigned int i )
+inline vec_t BitsToFloat( unsigned long i )
 {
 	vec_t f;
 	memcpy( &f, &i, sizeof(f));
@@ -209,7 +193,7 @@ inline bool IsFinite( vec_t f )
 	return ((FloatBits(f) & 0x7F800000) != 0x7F800000);
 }
 
-inline unsigned int FloatAbsBits( vec_t f )
+inline unsigned long FloatAbsBits( vec_t f )
 {
 	return FloatBits(f) & 0x7FFFFFFF;
 }
@@ -334,7 +318,7 @@ template< class DummyType >
 class CIntHandle16 : public CBaseIntHandle< unsigned short >
 {
 public:
-	inline			CIntHandle16() = default;
+	inline			CIntHandle16() {}
 
 	static inline	CIntHandle16<DummyType> MakeHandle( HANDLE_TYPE val )
 	{
@@ -353,7 +337,7 @@ template< class DummyType >
 class CIntHandle32 : public CBaseIntHandle< unsigned long >
 {
 public:
-	inline			CIntHandle32() = default;
+	inline			CIntHandle32() {}
 
 	static inline	CIntHandle32<DummyType> MakeHandle( HANDLE_TYPE val )
 	{

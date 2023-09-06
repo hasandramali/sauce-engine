@@ -2001,9 +2001,9 @@ void R_DrawDecalsAllImmediate_GatherDecals( IMatRenderContext *pRenderContext, i
 			if ( g_aDecalSortTrees[iSortTree].m_aDecalSortBuckets[iGroup][iTreeType].Element( iBucket ).m_nCheckCount != nCheckCount )
 				continue;
 
-			intp iHead = g_aDecalSortTrees[iSortTree].m_aDecalSortBuckets[iGroup][iTreeType].Element( iBucket ).m_iHead;
+			int iHead = g_aDecalSortTrees[iSortTree].m_aDecalSortBuckets[iGroup][iTreeType].Element( iBucket ).m_iHead;
 
-			intp iElement = iHead;
+			int iElement = iHead;
 			while ( iElement != g_aDecalSortPool.InvalidIndex() )
 			{
 				decal_t *pDecal = g_aDecalSortPool.Element( iElement );
@@ -2154,11 +2154,11 @@ void R_DrawDecalsAllImmediate( IMatRenderContext *pRenderContext, int iGroup, in
 		{
 			if ( g_aDecalSortTrees[iSortTree].m_aDecalSortBuckets[iGroup][iTreeType].Element( iBucket ).m_nCheckCount != nCheckCount )
 				continue;
-
-			intp iHead = g_aDecalSortTrees[iSortTree].m_aDecalSortBuckets[iGroup][iTreeType].Element( iBucket ).m_iHead;
-
+			
+			int iHead = g_aDecalSortTrees[iSortTree].m_aDecalSortBuckets[iGroup][iTreeType].Element( iBucket ).m_iHead;
+			
 			int nCount;
-			intp iElement = iHead;
+			int iElement = iHead;
 			while ( iElement != g_aDecalSortPool.InvalidIndex() )
 			{
 				decal_t *pDecal = g_aDecalSortPool.Element( iElement );
@@ -2304,7 +2304,7 @@ inline void R_DrawDecalMeshList( DecalMeshList_t &meshList )
 }
 
 #define DECALMARKERS_SWITCHSORTTREE ((decal_t *)0x00000000)
-#define DECALMARKERS_SWITCHBUCKET	((decal_t *)-1)
+#define DECALMARKERS_SWITCHBUCKET	((decal_t *)0xFFFFFFFF)
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
@@ -2330,7 +2330,7 @@ void R_DrawDecalsAll_GatherDecals( IMatRenderContext *pRenderContext, int iGroup
 			if ( bucket.m_nCheckCount != nCheckCount )
 				continue;
 
-			intp iHead = bucket.m_iHead;
+			int iHead = bucket.m_iHead;
 			if ( !g_aDecalSortPool.IsValidIndex( iHead ) )
 				continue;
 
@@ -2346,7 +2346,7 @@ void R_DrawDecalsAll_GatherDecals( IMatRenderContext *pRenderContext, int iGroup
 
 			DrawDecals.AddToTail( DECALMARKERS_SWITCHBUCKET );
 
-			intp iElement = iHead;
+			int iElement = iHead;
 			while ( iElement != g_aDecalSortPool.InvalidIndex() )
 			{
 				decal_t *pDecal = g_aDecalSortPool.Element( iElement );
@@ -2647,7 +2647,7 @@ void R_DrawDecalsAll( IMatRenderContext *pRenderContext, int iGroup, int iTreeTy
 			if ( bucket.m_nCheckCount != nCheckCount )
 				continue;
 			
-			intp iHead = bucket.m_iHead;
+			int iHead = bucket.m_iHead;
 			if ( !g_aDecalSortPool.IsValidIndex( iHead ) )
 				continue;
 
@@ -2666,7 +2666,7 @@ void R_DrawDecalsAll( IMatRenderContext *pRenderContext, int iGroup, int iTreeTy
 			bool bBatchInit = true;
 			
 			int nCount;
-			intp iElement = iHead;
+			int iElement = iHead;
 			while ( iElement != g_aDecalSortPool.InvalidIndex() )
 			{
 				decal_t *pDecal = g_aDecalSortPool.Element( iElement );
@@ -3015,7 +3015,7 @@ void DecalSurfaceAdd( SurfaceHandle_t surfID, int iGroup )
 		}
 
 		pDecal->flags &= ~FDECAL_HASUPDATED;
-		intp iPool = g_aDecalSortPool.Alloc( true );
+		int iPool = g_aDecalSortPool.Alloc( true );
 		if ( iPool != g_aDecalSortPool.InvalidIndex() )
 		{
 			g_aDecalSortPool[iPool] = pDecal;
@@ -3024,7 +3024,7 @@ void DecalSurfaceAdd( SurfaceHandle_t surfID, int iGroup )
 			DecalMaterialBucket_t &bucket = sortTree.m_aDecalSortBuckets[iGroup][iTreeType].Element( pDecal->m_iSortMaterial );
 			if ( bucket.m_nCheckCount == nCheckCount )
 			{	
-				intp iHead = bucket.m_iHead;
+				int iHead = bucket.m_iHead;
 				g_aDecalSortPool.LinkBefore( iHead, iPool );
 			}
 			

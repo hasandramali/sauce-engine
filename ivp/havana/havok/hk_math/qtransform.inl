@@ -1,3 +1,7 @@
+hk_QTransform::hk_QTransform()
+{
+}
+
 hk_QTransform::hk_QTransform(const hk_Vector3& axis, hk_real angle,
 							const hk_Vector3& translate)
 	: m_rotation(axis,angle), m_translation(translate)

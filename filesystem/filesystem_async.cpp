@@ -122,11 +122,11 @@ public:
 		Q_strncpy( szFixedName, pszFilename, sizeof( szFixedName ) );
 		Q_FixSlashes( szFixedName );
 
-		Assert( (intp)FS_INVALID_ASYNC_FILE == m_map.InvalidIndex() );
+		Assert( (int)FS_INVALID_ASYNC_FILE == m_map.InvalidIndex() );
 
 		AUTO_LOCK( m_mutex );
 
-		intp iEntry = m_map.Find( szFixedName );
+		int iEntry = m_map.Find( szFixedName );
 		if ( iEntry == m_map.InvalidIndex() )
 		{
 			iEntry = m_map.Insert( strdup( szFixedName ), new AsyncOpenedFile_t );
@@ -146,7 +146,7 @@ public:
 
 		AUTO_LOCK( m_mutex );
 
-		intp iEntry = m_map.Find( szFixedName );
+		int iEntry = m_map.Find( szFixedName );
 		if ( iEntry != m_map.InvalidIndex() )
 		{
 			m_map[iEntry]->AddRef();
@@ -164,7 +164,7 @@ public:
 
 		AUTO_LOCK( m_mutex );
 
-		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(intp)item;
+		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(int)item;
 		Assert( m_map.IsValidIndex( iEntry ) );
 		m_map[iEntry]->AddRef();
 		return m_map[iEntry];
@@ -179,7 +179,7 @@ public:
 
 		AUTO_LOCK( m_mutex );
 
-		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(intp)item;
+		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(int)item;
 		Assert( m_map.IsValidIndex( iEntry ) );
 		m_map[iEntry]->AddRef();
 	}
@@ -193,7 +193,7 @@ public:
 
 		AUTO_LOCK( m_mutex );
 
-		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(intp)item;
+		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(int)item;
 		Assert( m_map.IsValidIndex( iEntry ) );
 		if ( m_map[iEntry]->Release() == 0 )
 		{
@@ -659,9 +659,8 @@ void CBaseFileSystem::InitAsync()
 		Msg( "Async I/O disabled from command line\n" );
 		return;
 	}
-#ifndef UNITTESTS
+
 	if ( VCRGetMode() == VCR_Disabled )
-#endif
 	{
 		// create the i/o thread pool
 		m_pThreadPool = CreateThreadPool();
@@ -669,6 +668,7 @@ void CBaseFileSystem::InitAsync()
 		ThreadPoolStartParams_t params;
 		params.iThreadPriority = 0;
 		params.bIOThreads = true;
+		params.nThreadsMax = 4; // Limit count of IO threads to a maximum of 4.
 		if ( IsX360() )
 		{
 			// override defaults
@@ -678,10 +678,11 @@ void CBaseFileSystem::InitAsync()
 			params.bUseAffinityTable = true;
 			params.iAffinityTable[0] = XBOX_PROCESSOR_3;
 		}
-		else
+		else if( IsPC() )
 		{
-			params.nThreadsMax = MIN(params.nThreads, 4); // Limit count of IO threads to a maximum of 4.
-			params.nStackSize = 256*1024;
+			// override defaults
+			// maximum # of async I/O thread on PC is 2
+			params.nThreads = 1;
 		}
 
 		if ( !m_pThreadPool->Start( params, "IOJob" ) )
@@ -1526,7 +1527,7 @@ void CBaseFileSystem::DoAsyncCallback( const FileAsyncRequest_t &request, void *
 	if ( pDataToFree  )
 	{
 		Assert( !request.pfnAlloc );
-#if defined( OSX ) || defined( LINUX ) || defined(PLATFORM_BSD)
+#if defined( OSX ) || defined( LINUX )
 		// The ugly delete[] (void*) method generates a compile warning on osx, as it should.
 		free( pDataToFree );
 #else

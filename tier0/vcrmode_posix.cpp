@@ -859,7 +859,7 @@ void* VCR_CreateThread(
 					   void *lpStartAddress,
 					   void *lpParameter,
 					   unsigned long dwCreationFlags,
-                       uintp *lpThreadID )
+					   unsigned long *lpThreadID )
 {	
 	return CreateSimpleThread( (ThreadFunc_t)lpStartAddress, lpParameter, lpThreadID, 0 );
 }

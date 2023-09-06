@@ -171,18 +171,6 @@ void V_RenderVGuiOnly( void )
 	Shader_SwapBuffers();
 }
 
-void V_RenderSwapBuffers( void )
-{
-	materials->BeginFrame( host_frametime );
-	g_EngineRenderer->FrameBegin();
-
-	UpdateMaterialSystemConfig();
-
-	g_EngineRenderer->FrameEnd( );
-	materials->EndFrame();
-
-	Shader_SwapBuffers();
-}
 
 void FullViewColorAdjustment( )
 {
@@ -535,7 +523,7 @@ public:
 		int m_nLeafWaterDataID;
 	};
 	
-	bool EnumerateLeaf( int leaf, intp context )
+	bool EnumerateLeaf( int leaf, int context )
 	{
 		BoxIntersectWaterContext_t *pSearchContext = ( BoxIntersectWaterContext_t * )context;
 		mleaf_t *pLeaf = &host_state.worldmodel->brush.pShared->leafs[leaf];
@@ -553,7 +541,7 @@ public:
 		BoxIntersectWaterContext_t context;
 		context.m_bFoundWaterLeaf = false;
 		context.m_nLeafWaterDataID = leafWaterDataID;
-		g_pToolBSPTree->EnumerateLeavesInBox( mins, maxs, this, ( intp )&context );
+		g_pToolBSPTree->EnumerateLeavesInBox( mins, maxs, this, ( int )&context );
 		return context.m_bFoundWaterLeaf;
 	}
 

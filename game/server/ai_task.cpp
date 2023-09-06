@@ -49,7 +49,7 @@ const char *TaskFailureToString( AI_TaskFailureCode_t code )
 {
 	const char *pszResult;
 	if ( code < 0 || code >= NUM_FAIL_CODES )
-		pszResult = (const char *)(intp)code;
+		pszResult = (const char *)code;
 	else
 		pszResult = g_ppszTaskFailureText[code];
 	return pszResult;

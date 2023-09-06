@@ -65,7 +65,7 @@ public:
      *****************************************************************************/
     const hkMoppCode* get_compact_ledge_tree_root() const 
 	{
-		char* base = (char*)(((intp)this) + this->offset_ledgetree_root);
+		char* base = (char*)(((int)this) + this->offset_ledgetree_root);
 		return((const hkMoppCode*)base);
     }
 
@@ -78,7 +78,7 @@ public:
 
 private: 
 
-    IVP_Compact_Mopp() = default;
+    IVP_Compact_Mopp() {;};
 
 };
 

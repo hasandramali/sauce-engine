@@ -265,7 +265,7 @@ void CStaticCollisionPolyhedronCache::Update( void )
 				m_BrushPolyhedrons[i] = pDest;
 				pFinalDest += memRequired;
 
-				intp memoryOffset = ((uint8 *)pDest) - ((uint8 *)pSource);
+				int memoryOffset = ((uint8 *)pDest) - ((uint8 *)pSource);
 
 				memcpy( pDest, pSource, memRequired );
 				//move all the pointers to their new location.
@@ -425,7 +425,7 @@ void CStaticCollisionPolyhedronCache::Update( void )
 					m_StaticPropPolyhedrons[i] = pDest;
 					pFinalDest += memRequired;
 
-					intp memoryOffset = ((uint8 *)pDest) - ((uint8 *)pSource);
+					int memoryOffset = ((uint8 *)pDest) - ((uint8 *)pSource);
 
 					memcpy( pDest, pSource, memRequired );
 					//move all the pointers to their new location.

@@ -188,9 +188,7 @@ void CNPC_Apache::Spawn( void )
 
 	m_iRockets = 10;
 
-	Vector mins, maxs;
-	ExtractBbox(0, mins, maxs);
-	UTIL_SetSize(this, mins, maxs);
+	UTIL_SetSize( this, Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
 
 	//CollisionProp()->SetSurroundingBoundsType( USE_SPECIFIED_BOUNDS, &s_vecSurroundingMins, &s_vecSurroundingMaxs );
 	//AddSolidFlags( FSOLID_CUSTOMRAYTEST | FSOLID_CUSTOMBOXTEST );

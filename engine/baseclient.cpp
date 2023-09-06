@@ -1098,10 +1098,10 @@ void CBaseClient::EndTrace( bf_write &msg )
 	}
 
 	if ( sv_netspike_output.GetInt() & 1 )
-		COM_LogString( SERVER_PACKETS_LOG, (const char*)logData.String() );
+		COM_LogString( SERVER_PACKETS_LOG, logData.String() );
 	if ( sv_netspike_output.GetInt() & 2 )
-		Log( "%s", (const char*)logData.String() );
-	ETWMark1S( "netspike", (const char*)logData.String() );
+		Log( "%s", logData.String() );
+	ETWMark1S( "netspike", logData.String() );
 	m_Trace.m_Records.RemoveAll();
 	m_iTracing = 0;
 }
@@ -1431,7 +1431,7 @@ void CBaseClient::UpdateUserSettings()
 	SetRate( rate, false );
 
 	// set server to client update rate
-	SetUpdateRate( m_ConVars->GetInt( "cl_updaterate", 60), false );
+	SetUpdateRate( m_ConVars->GetInt( "cl_updaterate", 20), false );
 
 	SetMaxRoutablePayloadSize( m_ConVars->GetInt( "net_maxroutable", MAX_ROUTABLE_PAYLOAD ) );
 

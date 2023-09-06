@@ -231,7 +231,7 @@ enum
 class CDmxElementDictionary
 {
 public:
-	CDmxElementDictionary() = default;
+	CDmxElementDictionary();
 
 	DmxElementDictHandle_t InsertElement( CDmxElement *pElement );
 	CDmxElement *GetElement( DmxElementDictHandle_t handle );
@@ -286,6 +286,15 @@ private:
 	AttributeList_t m_Attributes;
 	AttributeList_t m_ArrayAttributes;
 };
+
+
+//-----------------------------------------------------------------------------
+// Constructor
+//-----------------------------------------------------------------------------
+CDmxElementDictionary::CDmxElementDictionary()
+{
+}
+
 
 //-----------------------------------------------------------------------------
 // Clears the dictionary

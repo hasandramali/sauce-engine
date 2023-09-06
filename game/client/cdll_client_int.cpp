@@ -305,7 +305,7 @@ C_BaseEntityClassList::~C_BaseEntityClassList()
 class CDataChangedEvent
 {
 public:
-	CDataChangedEvent() = default;
+	CDataChangedEvent() {}
 	CDataChangedEvent( IClientNetworkable *ent, DataUpdateType_t updateType, int *pStoredEvent )
 	{
 		m_pEntity = ent;

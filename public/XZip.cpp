@@ -125,7 +125,7 @@
 static ZRESULT lasterrorZ=ZR_OK;
 #else
 #include "tier0/threadtools.h"
-static CTHREADLOCALINTEGER(ZRESULT) lasterrorZ;
+static CThreadLocalInt<ZRESULT> lasterrorZ;
 #endif
 
 typedef unsigned char uch;      // unsigned 8-bit value

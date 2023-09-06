@@ -381,7 +381,7 @@ void CalcBoneQuaternion( int frame, float s,
 	if ( panim->flags & STUDIO_ANIM_RAWROT )
 	{
 		Quaternion48 tmp;
-		V_memcpy( &tmp, panim->pQuat48(), sizeof(Quaternion48) );
+		memcpy( &tmp, panim->pQuat48(), sizeof(Quaternion48) );
 		q = tmp;
 		Assert( q.IsValid() );
 		return;
@@ -390,7 +390,7 @@ void CalcBoneQuaternion( int frame, float s,
 	if ( panim->flags & STUDIO_ANIM_RAWROT2 )
 	{
 		Quaternion64 tmp;
-		V_memcpy( &tmp, panim->pQuat64(), sizeof(Quaternion64) );
+		memcpy( &tmp, panim->pQuat64(), sizeof(Quaternion64) );
 		q = tmp;
 		Assert( q.IsValid() );
 		return;
@@ -5609,20 +5609,18 @@ bool Studio_AnimPosition( mstudioanimdesc_t *panim, float flCycle, Vector &vecPo
 
 	float	flFrame = flCycle * (panim->numframes - 1);
 
-
 	for (int i = 0; i < panim->nummovements; i++)
 	{
-		mstudiomovement_t pmove;
-		// TODO(nillerusr): fix alignment on model loading
-		V_memcpy(&pmove, panim->pMovement( i ), sizeof(mstudiomovement_t));
+		mstudiomovement_t *pmove = panim->pMovement( i );
 
-		if (pmove.endframe >= flFrame)
+		if (pmove->endframe >= flFrame)
 		{
-			float f = (flFrame - prevframe) / (pmove.endframe - prevframe);
-			float d = pmove.v0 * f + 0.5 * (pmove.v1 - pmove.v0) * f * f;
+			float f = (flFrame - prevframe) / (pmove->endframe - prevframe);
 
-			vecPos = vecPos + d * pmove.vector;
-			vecAngle.y = vecAngle.y * (1 - f) + pmove.angle * f;
+			float d = pmove->v0 * f + 0.5 * (pmove->v1 - pmove->v0) * f * f;
+
+			vecPos = vecPos + d * pmove->vector;
+			vecAngle.y = vecAngle.y * (1 - f) + pmove->angle * f;
 			if (iLoops != 0)
 			{
 				mstudiomovement_t *pmoveAnim = panim->pMovement( panim->nummovements - 1 );
@@ -5633,9 +5631,9 @@ bool Studio_AnimPosition( mstudioanimdesc_t *panim, float flCycle, Vector &vecPo
 		}
 		else
 		{
-			prevframe = pmove.endframe;
-			vecPos = pmove.position;
-			vecAngle.y = pmove.angle;
+			prevframe = pmove->endframe;
+			vecPos = pmove->position;
+			vecAngle.y = pmove->angle;
 		}
 	}
 
@@ -5945,8 +5943,6 @@ const char *Studio_GetDefaultSurfaceProps( CStudioHdr *pstudiohdr )
 
 float Studio_GetMass( CStudioHdr *pstudiohdr )
 {
-	if( pstudiohdr == NULL ) return 0.f;
-
 	return pstudiohdr->mass();
 }
 

@@ -66,7 +66,7 @@ void CGameConsole::Initialize()
 		swide / 2 - offsetx,
 		offsety,
 		swide / 2,
-		(IsAndroid() ? 0.5f : 1.f )*(stall - (offsety * 2)));
+		stall - (offsety * 2));
 
 	m_bInitialized = true;
 #endif
@@ -141,7 +141,7 @@ void CGameConsole::ActivateDelayed(float time)
 #endif
 }
 
-void CGameConsole::SetParent( intp parent )
+void CGameConsole::SetParent( int parent )
 {	
 #ifndef _XBOX
 	if (!m_bInitialized)

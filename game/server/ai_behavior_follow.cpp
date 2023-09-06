@@ -53,7 +53,7 @@ struct AI_Follower_t
 	}
 
 	AIHANDLE 			hFollower;
-	intp					slot;
+	int					slot;
 	AI_FollowNavInfo_t	navInfo;
 	AI_FollowGroup_t *	pGroup;	// backpointer for efficiency
 };
@@ -111,7 +111,7 @@ public:
 		else
 		{
 			int result = 0;
-			for ( intp i = pGroup->followers.Head(); i != pGroup->followers.InvalidIndex(); i = pGroup->followers.Next( i ) )
+			for ( int i = pGroup->followers.Head(); i != pGroup->followers.InvalidIndex(); i = pGroup->followers.Next( i ) )
 			{
 				if ( pGroup->followers[i].hFollower && pGroup->followers[i].hFollower->ClassMatches( iszClassname ) )
 				{
@@ -131,7 +131,7 @@ public:
 			return 0;
 		}
 
-		intp h = pGroup->followers.Head();
+		int h = pGroup->followers.Head();
 
 		while( h != pGroup->followers.InvalidIndex() )
 		{
@@ -2561,7 +2561,7 @@ bool CAI_FollowManager::AddFollower( CBaseEntity *pTarget, CAI_BaseNPC *pFollowe
 
 		AI_FollowSlot_t *pSlot 		= &pGroup->pFormation->pSlots[slot];
 
-		intp i = pGroup->followers.AddToTail( );
+		int i = pGroup->followers.AddToTail( );
 
 		AI_Follower_t *iterNode = &pGroup->followers[i];
 		iterNode->hFollower 	= pFollower;
@@ -2569,8 +2569,9 @@ bool CAI_FollowManager::AddFollower( CBaseEntity *pTarget, CAI_BaseNPC *pFollowe
 		iterNode->pGroup		= pGroup;
 
 		pGroup->slotUsage.Set( slot );
+		
 		CalculateFieldsFromSlot( pSlot, &iterNode->navInfo );
-
+		
 		pHandle->m_hFollower = i;
 		pHandle->m_pGroup = pGroup;
 		return true;
@@ -2640,10 +2641,10 @@ bool CAI_FollowManager::RedistributeSlots( AI_FollowGroup_t *pGroup )
 	{
 		AI_FollowSlot_t *  pSlot 	  = &pGroup->pFormation->pSlots[bestSlot];
 		Vector			   slotPos	  = originFollowed + pSlot->position;
-		intp  h			= pGroup->followers.Head();
-		intp  hBest 		= pGroup->followers.InvalidIndex();
+		int  h			= pGroup->followers.Head();
+		int  hBest 		= pGroup->followers.InvalidIndex();
 		float 			   distSqBest = FLT_MAX;
-
+		
 		while ( h != pGroup->followers.InvalidIndex() )
 		{
 			AI_Follower_t *p = &pGroup->followers[h];
@@ -2690,7 +2691,7 @@ void CAI_FollowManager::ChangeFormation( AI_FollowManagerInfoHandle_t& hInfo, AI
 	if ( pNewFormation == pGroup->pFormation )
 		return;
 
-	intp h = pGroup->followers.Head();
+	int h = pGroup->followers.Head();
 		
 	while ( h != pGroup->followers.InvalidIndex() )
 	{
@@ -2737,7 +2738,7 @@ void CAI_FollowManager::RemoveFollower( AI_FollowManagerInfoHandle_t& hInfo )
 		AI_FollowGroup_t *pGroup = hInfo.m_pGroup;
 		AI_Follower_t* iterNode = &pGroup->followers[hInfo.m_hFollower];
 
-		intp slot = iterNode->slot;
+		int slot = iterNode->slot;
 		pGroup->slotUsage.Clear( slot );
 		pGroup->followers.Remove( hInfo.m_hFollower );
 		if ( pGroup->followers.Count() == 0 )
@@ -2845,7 +2846,7 @@ AI_FollowGroup_t *CAI_FollowManager::FindFollowerGroup( CBaseEntity *pFollower )
 {
 	for ( int i = 0; i < m_groups.Count(); i++ )
 	{
-		intp h = m_groups[i]->followers.Head();
+		int h = m_groups[i]->followers.Head();
 		while( h != m_groups[i]->followers.InvalidIndex() )
 		{
 			AI_Follower_t *p = &m_groups[i]->followers[h];

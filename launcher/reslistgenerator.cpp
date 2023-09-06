@@ -112,7 +112,9 @@ void MergeResLists( CUtlVector< CUtlString > &fileNames, char const *pchOutputFi
 class CWorkItem
 {
 public:
-	CWorkItem() = default;
+	CWorkItem()
+	{
+	}
 
 	CUtlString		m_sSubDir;
 	CUtlString		m_sAddCommands;

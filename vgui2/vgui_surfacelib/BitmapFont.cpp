@@ -10,11 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #include "vgui_surfacelib/BitmapFont.h"
 #include "vgui_surfacelib/FontManager.h"
 #include <tier0/dbg.h>

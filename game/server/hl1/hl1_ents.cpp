@@ -1587,7 +1587,7 @@ void CHL1Gib::Spawn( const char *szGibModel )
 
 	SetNextThink( gpGlobals->curtime + 4 );
 
-	m_lifeTime = 250;
+	m_lifeTime = 25;
 
 	SetThink ( &CHL1Gib::WaitTillLand );
 	SetTouch ( &CHL1Gib::BounceGibTouch );

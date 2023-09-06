@@ -429,7 +429,7 @@ void CDispCollTree::AABBTree_CreateLeafs( void )
 	}
 }
 
-void NO_ASAN CDispCollTree::AABBTree_GenerateBoxes_r( int nodeIndex, Vector *pMins, Vector *pMaxs )
+void __attribute__((no_sanitize("address"))) CDispCollTree::AABBTree_GenerateBoxes_r( int nodeIndex, Vector *pMins, Vector *pMaxs )
 {
 	// leaf
 	ClearBounds( *pMins, *pMaxs );
@@ -460,6 +460,7 @@ void NO_ASAN CDispCollTree::AABBTree_GenerateBoxes_r( int nodeIndex, Vector *pMi
 		m_nodes[nodeIndex].m_maxs.LoadAndSwizzle( childMaxs[0], childMaxs[1], childMaxs[2], childMaxs[3] );
 	}
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 

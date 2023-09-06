@@ -38,7 +38,7 @@ class BuildGroup
 
 public:
 	BuildGroup(Panel *parentPanel, Panel *contextPanel);
-	virtual ~BuildGroup();
+	~BuildGroup();
 
 	// Toggle build mode on/off
 	virtual void SetEnabled(bool state);

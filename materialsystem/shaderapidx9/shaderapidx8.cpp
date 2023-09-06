@@ -42,6 +42,7 @@ mat_fullbright 1 doesn't work properly on alpha materials in testroom_standards
 #include "colorformatdx8.h"
 #include "texturedx8.h"
 #include "textureheap.h"
+#include <malloc.h>
 #include "interface.h"
 #include "utlrbtree.h"
 #include "utlsymbol.h"
@@ -325,7 +326,7 @@ struct DynamicState_t
 	bool	m_bBuffer2Frames;
 #endif
 	
-	DynamicState_t() = default;
+	DynamicState_t() {}
 
 private:
 	DynamicState_t( DynamicState_t const& );
@@ -3498,7 +3499,6 @@ void CShaderAPIDx8::ResetRenderState( bool bFullReset )
 	SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
 
 	// No shade mode yet
-	const D3DSHADEMODE D3DSHADE_NONE = (D3DSHADEMODE)0;
 	m_DynamicState.m_ShadeMode = D3DSHADE_NONE;
 	ShadeMode( SHADER_SMOOTH );
 

@@ -47,7 +47,7 @@ public:
     //
     // Construction/Decontruction
     //
-    CDispNode() = default;
+    CDispNode() {};
     ~CDispNode() {};
 
     //=========================================================================

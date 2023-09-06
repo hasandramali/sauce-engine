@@ -214,11 +214,7 @@ public:
 	//-----------------------------------------------------
 	virtual int YieldWait( CThreadEvent **pEvents, int nEvents, bool bWaitAll = true, unsigned timeout = TT_INFINITE );
 	virtual int YieldWait( CJob **, int nJobs, bool bWaitAll = true, unsigned timeout = TT_INFINITE );
-	inline void Yield( unsigned timeout )
-	{
-		Assert( ThreadInMainThread() );
-		ThreadSleep( timeout );
-	}
+	void Yield( unsigned timeout );
 
 	//-----------------------------------------------------
 	// Add a native job to the queue (master thread)
@@ -231,7 +227,7 @@ public:
 	//  and execute or execute pFunctor right after completing current job and
 	//  before looking for another job.
 	//-----------------------------------------------------
-	// void ExecuteHighPriorityFunctor( CFunctor *pFunctor );
+	void ExecuteHighPriorityFunctor( CFunctor *pFunctor );
 
 	//-----------------------------------------------------
 	// Add an function object to the queue (master thread)
@@ -250,6 +246,8 @@ public:
 	int AbortAll();
 
 	virtual void Reserved1() {}
+
+	void WaitForIdle( bool bAll = true );
 
 private:
 	enum
@@ -420,7 +418,7 @@ private:
 				CFunctor *pFunctor = NULL;
 				tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s PeekCall():%d", __FUNCTION__, GetCallParam() );
 
-				switch ( GetCallParam() )
+				switch ( GetCallParam( &pFunctor ) )
 				{
 				case TPM_EXIT:
 					Reply( true );
@@ -429,10 +427,10 @@ private:
 
 				case TPM_SUSPEND:
 					Reply( true );
-					Suspend();
+					SuspendCooperative();
 					break;
 
-/*				case TPM_RUNFUNCTOR:
+				case TPM_RUNFUNCTOR:
 					if( pFunctor )
 					{
 						( *pFunctor )();
@@ -443,7 +441,7 @@ private:
 						Assert( pFunctor );
 						Reply( false );
 					}
-					break;*/
+					break;
 
 				default:
 					AssertMsg( 0, "Unknown call to thread" );
@@ -537,7 +535,7 @@ int CThreadPool::NumIdleThreads()
 	return m_nIdleThreads;
 }
 
-/*void CThreadPool::ExecuteHighPriorityFunctor( CFunctor *pFunctor )
+void CThreadPool::ExecuteHighPriorityFunctor( CFunctor *pFunctor )
 {
 	int i;
 	for ( i = 0; i < m_Threads.Count(); i++ )
@@ -549,7 +547,7 @@ int CThreadPool::NumIdleThreads()
 	{
 		m_Threads[i]->WaitForReply();
 	}
-}*/
+}
 
 //---------------------------------------------------------
 // Pause/resume processing jobs
@@ -577,10 +575,7 @@ int CThreadPool::SuspendExecution()
 		// here with the thread not actually suspended
 		for ( i = 0; i < m_Threads.Count(); i++ )
 		{
-			while ( !m_Threads[i]->IsSuspended() )
-			{
-				ThreadSleep();
-			}
+			m_Threads[i]->BWaitForThreadSuspendCooperative();
 		}
 	}
 
@@ -598,10 +593,17 @@ int CThreadPool::ResumeExecution()
 	{
 		for ( int i = 0; i < m_Threads.Count(); i++ )
 		{
-			m_Threads[i]->Resume();
+			m_Threads[i]->ResumeCooperative();
 		}
 	}
 	return result;
+}
+
+//---------------------------------------------------------
+
+void CThreadPool::WaitForIdle( bool bAll )
+{
+	ThreadWaitForEvents( m_IdleEvents.Count(), m_IdleEvents.Base(), bAll, 60000 );
 }
 
 //---------------------------------------------------------
@@ -616,7 +618,7 @@ int CThreadPool::YieldWait( CThreadEvent **pEvents, int nEvents, bool bWaitAll, 
 	CJob *pJob;
 	// Always wait for zero milliseconds initially, to let us process jobs on this thread.
 	timeout = 0;
-	while ( ( result = CThreadEvent::WaitForMultiple( nEvents, pEvents, bWaitAll, timeout ) ) == TW_TIMEOUT )
+	while ( ( result = ThreadWaitForEvents( nEvents, pEvents, bWaitAll, timeout ) ) == WAIT_TIMEOUT )
 	{
 		if ( !m_bExecOnThreadPoolThreadsOnly && m_SharedQueue.Pop( &pJob ) )
 		{
@@ -658,6 +660,20 @@ int CThreadPool::YieldWait( CJob **ppJobs, int nJobs, bool bWaitAll, unsigned ti
 	}
 
 	return YieldWait( handles.Base(), handles.Count(), bWaitAll, timeout);
+}
+
+//---------------------------------------------------------
+
+void CThreadPool::Yield( unsigned timeout )
+{
+	// @MULTICORE (toml 10/24/2006): not implemented
+	Assert( ThreadInMainThread() );
+	if ( !ThreadInMainThread() )
+	{
+		ThreadSleep( timeout );
+		return;
+	}
+	ThreadSleep( timeout );
 }
 
 //---------------------------------------------------------

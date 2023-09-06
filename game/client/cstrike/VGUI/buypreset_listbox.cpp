@@ -135,7 +135,7 @@ int	BuyPresetListBox::computeVPixelsNeeded( void )
 /**
  *  Adds an item to the end of the listbox.  UserData is assumed to be a pointer that can be freed by the listbox if non-NULL.
  */
-int BuyPresetListBox::AddItem( vgui::Panel *panel, IBuyPresetListBoxUserData * userData )
+int BuyPresetListBox::AddItem( vgui::Panel *panel, void * userData )
 {
 	assert(panel);
 
@@ -192,7 +192,7 @@ Panel * BuyPresetListBox::GetItemPanel(int index) const
 /**
  *  Returns the userData in the given index, or NULL
  */
-auto BuyPresetListBox::GetItemUserData(int index) -> IBuyPresetListBoxUserData *
+void * BuyPresetListBox::GetItemUserData(int index)
 {
 	if ( index < 0 || index >= m_items.Count() )
 	{
@@ -206,7 +206,7 @@ auto BuyPresetListBox::GetItemUserData(int index) -> IBuyPresetListBoxUserData *
 /**
  *  Sets the userData in the given index
  */
-void BuyPresetListBox::SetItemUserData( int index, IBuyPresetListBoxUserData * userData )
+void BuyPresetListBox::SetItemUserData( int index, void * userData )
 {
 	if ( index < 0 || index >= m_items.Count() )
 		return;

@@ -819,13 +819,10 @@ void CVideoMode_Common::SetupStartupGraphic()
 
     // loading.vtf
 	buf.Clear();	// added this Clear() because we saw cases where LoadVTF was not emptying the buf fully in the above section
-    const char* loading = "materials/console/startup_loading.vtf";
-    if ( IsSteamDeck() )
-        loading = "materials/gamepadui/game_logo.vtf";
-    m_pLoadingTexture = LoadVTF( buf, loading );
+    m_pLoadingTexture = LoadVTF( buf, "materials/console/startup_loading.vtf" );
     if ( !m_pLoadingTexture )
     {
-        Error( "Can't find background image '%s'\n", loading );
+        Error( "Can't find background image materials/console/startup_loading.vtf\n" );
         return;
     }
 }
@@ -886,12 +883,8 @@ void CVideoMode_Common::DrawStartupGraphic()
     pVMTKeyValues->SetInt( "$nocull", 1 );
     IMaterial *pMaterial = g_pMaterialSystem->CreateMaterial( "__background", pVMTKeyValues );
 
-    const char* loading = "console/startup_loading.vtf";
-    if ( IsSteamDeck() )
-        loading = "gamepadui/game_logo.vtf";
-
     pVMTKeyValues = new KeyValues( "UnlitGeneric" );
-    pVMTKeyValues->SetString( "$basetexture", loading );
+    pVMTKeyValues->SetString( "$basetexture", "Console/startup_loading.vtf" );
     pVMTKeyValues->SetInt( "$translucent", 1 );
     pVMTKeyValues->SetInt( "$ignorez", 1 );
     pVMTKeyValues->SetInt( "$nofog", 1 );
@@ -929,11 +922,7 @@ void CVideoMode_Common::DrawStartupGraphic()
 				slide = 0;
 				
 				DrawScreenSpaceRectangle( pMaterial, 0, 0+slide, w, h-50, 0, 0, tw-1, th-1, tw, th, NULL,1,1,depth );
-                if ( !IsSteamDeck() )
-                    DrawScreenSpaceRectangle( pLoadingMaterial, w-lw, h-lh+slide/2, lw, lh, 0, 0, lw-1, lh-1, lw, lh, NULL,1,1,depth-0.1 );
-                else
-                    // TODO: Steam Deck
-                    DrawScreenSpaceRectangle( pLoadingMaterial, w-lw, h-lh+slide/2, lw, lh, 0, 0, lw-1, lh-1, lw, lh, NULL,1,1,depth-0.1 );
+				DrawScreenSpaceRectangle( pLoadingMaterial, w-lw, h-lh+slide/2, lw, lh, 0, 0, lw-1, lh-1, lw, lh, NULL,1,1,depth-0.1 );
 			}
 
 			if(0)
@@ -1943,9 +1932,7 @@ static void VID_ProcessMovieFrame( const MovieInfo_t& info, bool jpeg, const cha
     bool bSuccess = false;
     if ( jpeg )
     {
-#if HAVE_JPEG
         bSuccess = videomode->TakeSnapshotJPEGToBuffer( outBuf, info.jpeg_quality );
-#endif
     }
     else
     {
@@ -2014,7 +2001,6 @@ void CVideoMode_Common::WriteMovieFrame( const MovieInfo_t& info )
     delete[] hp;
 }
 
-#if HAVE_JPEG
 //-----------------------------------------------------------------------------
 // Purpose: Expanded data destination object for CUtlBuffer output
 //-----------------------------------------------------------------------------
@@ -2113,11 +2099,10 @@ GLOBAL(void) jpeg_UtlBuffer_dest (j_compress_ptr cinfo, CUtlBuffer *pBuffer )
     dest->pub.term_destination      = term_destination;
     dest->pBuffer                   = pBuffer;
 }
-#endif
 
 bool CVideoMode_Common::TakeSnapshotJPEGToBuffer( CUtlBuffer& buf, int quality )
 {
-#if !defined( _X360 ) && HAVE_JPEG
+#if !defined( _X360 )
     if ( g_LostVideoMemory )
         return false;
 

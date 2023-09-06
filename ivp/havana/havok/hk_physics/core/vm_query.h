@@ -27,7 +27,7 @@ class hk_Impulse_Info
 		// maybe used for soft objects
 		int client_data0;
 		int client_data1;
-		inline hk_Impulse_Info() = default;
+		inline hk_Impulse_Info() {}
 };
 
 class hk_Virtual_Mass_Query: public hk_Impulse_Info
@@ -37,7 +37,7 @@ class hk_Virtual_Mass_Query: public hk_Impulse_Info
 	// and the point of contact
 	public:
 
-		inline hk_Virtual_Mass_Query() = default;
+		inline hk_Virtual_Mass_Query(){}
 };
 
 struct hk_Core_VMQ_Input

@@ -69,7 +69,9 @@ public:
 class CP4Factory
 {
 public:
-	CP4Factory() = default;
+	CP4Factory();
+	~CP4Factory();
+
 public:
 	// Sets whether dummy objects are created by the factory.
 	// Returns the old state of the dummy mode.

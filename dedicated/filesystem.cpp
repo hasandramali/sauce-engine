@@ -13,11 +13,7 @@
 #include <stdlib.h>
 #include "interface.h"
 #include <string.h>
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #include "tier1/strtools.h"
 #include "tier0/icommandline.h"
 #include "tier0/dbg.h"

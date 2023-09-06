@@ -144,15 +144,14 @@
 	#define timeGetTime			timeGetTime__USE_VCR_MODE
 	#if defined( clock )
 		#undef clock
-    #endif
-    // MoeMod : breaks system header
-	//#define time				time__USE_VCR_MODE
+	#endif
+	#define time				time__USE_VCR_MODE
 	
 	
-	//#if defined( recvfrom )
-	//	#undef recvfrom
-	//#endif
-	//#define recvfrom			recvfrom__USE_VCR_MODE
+	#if defined( recvfrom )
+		#undef recvfrom
+	#endif
+	#define recvfrom			recvfrom__USE_VCR_MODE
 
 
 	#if defined( GetCursorPos )

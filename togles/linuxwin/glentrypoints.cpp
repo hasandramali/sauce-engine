@@ -54,7 +54,7 @@
 #error
 #endif
 
-#if defined(PLATFORM_BSD) || defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
+#if defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
 	#include "appframework/ilaunchermgr.h"
 	ILauncherMgr *g_pLauncherMgr = NULL;
 #endif
@@ -212,16 +212,7 @@ static void GetOpenGLVersion(int *major, int *minor, int *patch)
 		const char *version = (const char *) glGetString(GL_VERSION);
 		if (version)
 		{
-			const char *s = version;
-			while( *s )
-			{
-				if( *s >= '0' && *s <= '9' )
-				{
-					sscanf( s, "%d.%d", major, minor );
-					break;
-				}
-				s++;
-			}
+			sscanf( version, "%d.%d.%d", major, minor, patch );
 		}
 	}
 }
@@ -249,8 +240,8 @@ static int GetOpenGLVersionPatch()
 
 static bool CheckBaseOpenGLVersion()
 {
-	const int NEED_MAJOR = 3;
-	const int NEED_MINOR = 2;
+	const int NEED_MAJOR = 2;
+	const int NEED_MINOR = 0;
 	const int NEED_PATCH = 0;
 
 	int major, minor, patch;
@@ -260,7 +251,7 @@ static bool CheckBaseOpenGLVersion()
 	const int have = GLVERNUM(major, minor, patch);
 	if (have < need)
 	{
-		Warning("PROBLEM: You appear to have OpenGL %d.%d.%d, but we need at least %d.%d.%d!\n",
+		fprintf(stderr, "PROBLEM: You appear to have OpenGL %d.%d.%d, but we need at least %d.%d.%d!\n",
 			major, minor, patch, NEED_MAJOR, NEED_MINOR, NEED_PATCH);
 		return false;
 	}
@@ -374,12 +365,6 @@ COpenGLEntryPoints::COpenGLEntryPoints()
 		m_nDriverProvider = cGLDriverProviderIntelOpenSource;
 	else if ( V_stristr( m_pGLDriverStrings[cGLVendorString], "apple" ) )
 		m_nDriverProvider = cGLDriverProviderApple;
-	else if ( V_stristr( m_pGLDriverStrings[cGLVendorString], "qualcomm" ) )
-		m_nDriverProvider = cGLDriverProviderQualcomm;
-	else if ( V_stristr( m_pGLDriverStrings[cGLVendorString], "arm" ) )
-		m_nDriverProvider = cGLDriverProviderARM;
-	else if ( V_stristr( m_pGLDriverStrings[cGLVendorString], "imagination technologies" ) )
-		m_nDriverProvider = cGLDriverProviderImagination;
 
 	pszString = ( const char * )glGetString(GL_RENDERER);
 	m_pGLDriverStrings[cGLRendererString] = strdup( pszString ? pszString : "" );
@@ -390,10 +375,8 @@ COpenGLEntryPoints::COpenGLEntryPoints()
 	pszString = ( const char * )glGetString(GL_EXTENSIONS);
 	m_pGLDriverStrings[cGLExtensionsString] = strdup( pszString ? pszString : "" );
 
-	Msg( "GL_RENDERER=\"%s\" GL_VERSION=\"%s\" GL_VENDOR=\"%s\" (%d.%d.%d)\n", m_pGLDriverStrings[ cGLRendererString ], m_pGLDriverStrings[ cGLVersionString ], m_pGLDriverStrings[ cGLVendorString ],
+	printf( "OpenGL: %s %s (%d.%d.%d)\n", m_pGLDriverStrings[ cGLRendererString ], m_pGLDriverStrings[ cGLVersionString ],
 		m_nOpenGLVersionMajor, m_nOpenGLVersionMinor, m_nOpenGLVersionPatch );
-
-	Msg("GL_EXTENSIONS=\"%s\"\n", m_pGLDriverStrings[cGLExtensionsString]);
 
 	// !!! FIXME: Alfred says the original GL_APPLE_fence code only exists to
 	// !!! FIXME:  hint Apple's drivers and not because we rely on the

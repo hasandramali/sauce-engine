@@ -408,7 +408,7 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 		}
 
 		// Do this so inherited classes looking for 'angles' don't have to bother with 'angle'
-		return KeyValue( "angles", szBuf );
+		return KeyValue( szKeyName, szBuf );
 	}
 
 	// NOTE: Have to do these separate because they set two values instead of one
@@ -754,18 +754,10 @@ BASEPTR	CBaseEntity::ThinkSet( BASEPTR func, float thinkTime, const char *szCont
 {
 #if !defined( CLIENT_DLL )
 #ifdef _DEBUG
-#ifdef PLATFORM_64BITS
-#ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 16 );
-#else
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#endif
-#else
 #ifdef GNUC
 	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
 #else
 	COMPILE_TIME_ASSERT( sizeof(func) == 4 );
-#endif
 #endif
 #endif
 #endif

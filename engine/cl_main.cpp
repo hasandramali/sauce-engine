@@ -2367,8 +2367,7 @@ bool CL_ShouldLoadBackgroundLevel( const CCommand &args )
 	// don't load the map in developer or console mode
 	if ( developer.GetInt() || 
 		CommandLine()->CheckParm("-console") || 
-		CommandLine()->CheckParm("-dev") ||
-		CommandLine()->CheckParm("-nobackgroundlevel") )
+		CommandLine()->CheckParm("-dev") )
 		return false;
 
 	// don't load the map if we're going straight into a level
@@ -2739,7 +2738,6 @@ static ConCommand startupmenu( "startupmenu", &CL_CheckToDisplayStartupMenus, "O
 ConVar cl_language( "cl_language", "english", FCVAR_USERINFO, "Language (from HKCU\\Software\\Valve\\Steam\\Language)" );
 void CL_InitLanguageCvar()
 {
-	Msg("CL_InitLanguageCvar\n");
 	if ( Steam3Client().SteamApps() )
 	{
 		cl_language.SetValue( Steam3Client().SteamApps()->GetCurrentGameLanguage() );
@@ -2749,22 +2747,15 @@ void CL_InitLanguageCvar()
 		char *szLang = getenv("LANG");
 
 		if ( CommandLine()->CheckParm( "-language" ) )
-		{
 			cl_language.SetValue( CommandLine()->ParmValue( "-language", "english") );
-			return;
-		}
 		else if( szLang )
 		{
 			ELanguage lang = PchLanguageICUCodeToELanguage(szLang, k_Lang_English);
 			const char *szShortLang = GetLanguageShortName(lang);
-			if( Q_strncmp(szShortLang, "none", 4) != 0 )
-			{
-				cl_language.SetValue( szShortLang );
-				return;
-			}
+			cl_language.SetValue( szShortLang );
 		}
-
-		cl_language.SetValue( "english" );
+		else
+			cl_language.SetValue( "english" );
 	}
 }
 

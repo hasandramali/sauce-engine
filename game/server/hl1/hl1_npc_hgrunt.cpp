@@ -209,6 +209,7 @@ BEGIN_DATADESC( CNPC_HGrunt )
 	DEFINE_FIELD( m_voicePitch, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iSentence, FIELD_INTEGER ),
 	DEFINE_KEYFIELD( m_iWeapons, FIELD_INTEGER, "weapons" ),
+	DEFINE_KEYFIELD( m_SquadName, FIELD_STRING, "netname" ),
 
 	DEFINE_FIELD( m_bInBarnacleMouth, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flLastEnemySightTime, FIELD_TIME ),
@@ -490,7 +491,7 @@ int CNPC_HGrunt::SquadRecruit( int searchRadius, int maxMembers )
 		char szSquadName[64];
 		Q_snprintf( szSquadName, sizeof( szSquadName ), "squad%d\n", g_iSquadIndex );
 
-		m_SquadName = AllocPooledString( szSquadName );
+		m_SquadName = MAKE_STRING( szSquadName );
 
 		while ( ( pEntity = gEntList.FindEntityInSphere( pEntity, GetAbsOrigin(), searchRadius ) ) != NULL )
 		{

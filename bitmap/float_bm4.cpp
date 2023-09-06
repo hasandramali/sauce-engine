@@ -40,7 +40,7 @@ struct SSBumpCalculationContext								// what each thread needs to see
 };
 
 
-static uintp SSBumpCalculationThreadFN( void * ctx1 )
+static unsigned SSBumpCalculationThreadFN( void * ctx1 )
 {
 	SSBumpCalculationContext *ctx = ( SSBumpCalculationContext * ) ctx1;
 

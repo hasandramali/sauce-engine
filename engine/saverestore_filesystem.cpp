@@ -154,7 +154,7 @@ private:
 	CSaveDirectory	*m_pSaveDirectory;
 	CUtlMap<CUtlSymbol, SaveFile_t> &GetDirectory( void ) { return m_pSaveDirectory->m_Files; }
 	SaveFile_t &GetFile( const int idx ) { return m_pSaveDirectory->m_Files[idx]; }
-	SaveFile_t &GetFile( const FileHandle_t hFile ) { return GetFile( (uintp)hFile ); }
+	SaveFile_t &GetFile( const FileHandle_t hFile ) { return GetFile( (unsigned int)hFile ); }
 
 	FileHandle_t	GetFileHandle( const char *pFileName );
 	int				GetFileIndex( const char *pFileName );
@@ -310,12 +310,12 @@ int CSaveRestoreFileSystem::GetFileIndex( const char *filename )
 
 FileHandle_t CSaveRestoreFileSystem::GetFileHandle( const char *filename )
 {
-	intp idx = GetFileIndex( filename );
+	int idx = GetFileIndex( filename );
 	if ( idx == INVALID_INDEX )
 	{
 		idx = 0;
 	}
-	return (FileHandle_t)idx;
+	return (void*)idx;
 }
 
 //-----------------------------------------------------------------------------
@@ -331,7 +331,7 @@ bool CSaveRestoreFileSystem::FileExists( const char *pFileName, const char *pPat
 //-----------------------------------------------------------------------------
 bool CSaveRestoreFileSystem::HandleIsValid( FileHandle_t hFile )
 {
-	return hFile && GetDirectory().IsValidIndex( (uintp)hFile );
+	return hFile && GetDirectory().IsValidIndex( (unsigned int)hFile );
 }
 
 //-----------------------------------------------------------------------------
@@ -339,7 +339,7 @@ bool CSaveRestoreFileSystem::HandleIsValid( FileHandle_t hFile )
 //-----------------------------------------------------------------------------
 void CSaveRestoreFileSystem::RenameFile( char const *pOldPath, char const *pNewPath, const char *pathID )
 {
-	intp idx = GetFileIndex( pOldPath );
+	int idx = GetFileIndex( pOldPath );
 	if ( idx != INVALID_INDEX )
 	{
 		CUtlSymbol newID = AddString( Q_UnqualifiedFileName( pNewPath ) );
@@ -369,7 +369,7 @@ FileHandle_t CSaveRestoreFileSystem::Open( const char *pFullName, const char *pO
 {
 	SaveFile_t *pFile = NULL;
 	CUtlSymbol id = AddString( Q_UnqualifiedFileName( pFullName ) );
-	intp idx = GetDirectory().Find( id );
+	int idx = GetDirectory().Find( id );
 	if ( idx == INVALID_INDEX )
 	{
 		// Don't create a read-only file
@@ -588,7 +588,7 @@ FSAsyncStatus_t CSaveRestoreFileSystem::AsyncWrite( const char *pFileName, const
 	FileHandle_t hFile = Open( pFileName, "wb" );
 	if ( hFile )
 	{
-		SaveFile_t &file = GetFile( (uintp)hFile );
+		SaveFile_t &file = GetFile( (unsigned int)hFile );
 
 		if( file.eType == WRITE_ONLY )
 		{

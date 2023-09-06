@@ -196,8 +196,7 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 				}
 			}
 
-            gGL->glUseProgramObjectARB(pNewPair->m_program);
-			//gGL->glUseProgram( (GLuint)pNewPair->m_program );
+			gGL->glUseProgram( (GLuint)pNewPair->m_program );
 			
 			GL_BATCH_PERF( m_FlushStats.m_nTotalProgramPairChanges++; )
 
@@ -564,7 +563,7 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 
 			SetBufAndVertexAttribPointer( nIndex, pBuf->GetHandle(), 
 				pStream->m_stride, pDeclElem->m_gldecl.m_datatype, pDeclElem->m_gldecl.m_normalized, pDeclElem->m_gldecl.m_nCompCount, 
-				reinterpret_cast< const GLvoid * >( reinterpret_cast< intp >( pBuf->m_pPseudoBuf ) + nBufOffset ),
+				reinterpret_cast< const GLvoid * >( reinterpret_cast< int >( pBuf->m_pPseudoBuf ) + nBufOffset ), 
 				pBuf->m_nRevision );
 
 			if ( !( m_lastKnownVertexAttribMask & nMask ) )

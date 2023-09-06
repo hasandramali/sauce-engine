@@ -17,7 +17,6 @@
 #include "snd_dev_wave.h"
 #include "tier2/tier2.h"
 
-#include <time.h>
 
 //-----------------------------------------------------------------------------
 // External interfaces
@@ -66,7 +65,7 @@ private:
 	{
 		char				filename[ 512 ];
 		CAudioSource		*source;
-		time_t				filetime;
+		long				filetime;
 	};
 
 	IAudioDevice *m_pAudioDevice;
@@ -169,7 +168,7 @@ CAudioSource *CSoundSystem::FindOrAddSound( const char *filename )
 		Assert( s );
 		if ( !stricmp( s->filename, filename ) )
 		{
-			time_t filetime = g_pFullFileSystem->GetFileTime( filename );
+			long filetime = g_pFullFileSystem->GetFileTime( filename );
 			if ( filetime != s->filetime )
 			{
 				Msg( "Reloading sound %s\n", filename );

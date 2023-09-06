@@ -479,7 +479,7 @@ Handles cursor positioning, line wrapping, etc
 */
 static bool g_fColorPrintf = false;
 static bool g_bInColorPrint = false;
-extern CTHREADLOCALINT g_bInSpew;
+extern CThreadLocalInt<> g_bInSpew;
 
 void Con_Printf( const char *fmt, ... );
 

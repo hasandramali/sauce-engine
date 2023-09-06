@@ -20,11 +20,7 @@
 #define VA_RESERVE_FLAGS (MEM_RESERVE|MEM_LARGE_PAGES)
 #endif
 
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 
 #include "tier0/valve_minmax_off.h"	// GCC 4.2.2 headers screw up our min/max defs.
 #include <algorithm>
@@ -313,8 +309,8 @@ public:
 	virtual void InitDebugInfo( void *pvDebugInfo, const char *pchRootFileName, int nLine ) {}
 
 	virtual void GetActualDbgInfo( const char *&pFileName, int &nLine ) {}
-	virtual void RegisterAllocation( const char *pFileName, int nLine, size_t nLogicalSize, size_t nActualSize, unsigned nTime ) {}
-	virtual void RegisterDeallocation( const char *pFileName, int nLine, size_t nLogicalSize, size_t nActualSize, unsigned nTime ) {}
+	virtual void RegisterAllocation( const char *pFileName, int nLine, int nLogicalSize, int nActualSize, unsigned nTime ) {}
+	virtual void RegisterDeallocation( const char *pFileName, int nLine, int nLogicalSize, int nActualSize, unsigned nTime ) {}
 
 	virtual int GetVersion() { return MEMALLOC_VERSION; }
 
@@ -666,7 +662,7 @@ int CSmallBlockPool::CountFreeBlocks()
 // Size of committed memory managed by this heap:
 int CSmallBlockPool::GetCommittedSize()
 {
-	unsigned totalSize = (uintp)m_pCommitLimit - (uintp)m_pBase;
+	unsigned totalSize = (unsigned)m_pCommitLimit - (unsigned)m_pBase;
 	Assert( 0 != m_nBlockSize );
 
 	return totalSize;

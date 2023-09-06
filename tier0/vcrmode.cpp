@@ -1543,7 +1543,7 @@ void* VCR_CreateThread(
 	void *lpStartAddress,
 	void *lpParameter,
 	unsigned long dwCreationFlags,
-    uintp *lpThreadID )
+	unsigned long *lpThreadID )
 {
 	unsigned dwThreadID = 0;
 

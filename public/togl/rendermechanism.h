@@ -34,7 +34,9 @@
 
 #undef PROTECTED_THINGS_ENABLE
 
-#include "SDL_opengl.h"
+#include <GL/gl.h>
+#include <GL/glext.h>
+
 #include "tier0/basetypes.h"
 #include "tier0/platform.h"
 

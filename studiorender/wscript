@@ -29,8 +29,7 @@ def build(bld):
 		'r_studioflex.cpp',
 		'r_studiogettriangles.cpp',
 		'r_studiolight.cpp',
-		'r_studiostats.cpp',
-		'../public/tier0/memoverride.cpp'
+		'r_studiostats.cpp'
 	]
 
 	includes = [

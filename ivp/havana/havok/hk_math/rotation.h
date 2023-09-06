@@ -9,7 +9,7 @@
 class hk_Rotation : public hk_Matrix3
 {
 	public:		
-		inline hk_Rotation() = default;
+		inline hk_Rotation() { }
 			//: Empty constructor.
 		inline ~hk_Rotation() { }
 			//: Empty deconstructor.

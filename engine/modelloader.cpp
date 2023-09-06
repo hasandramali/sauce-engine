@@ -387,16 +387,13 @@ IModelLoader *modelloader = ( IModelLoader * )&g_ModelLoader;
 //-----------------------------------------------------------------------------
 // Globals used by the CMapLoadHelper
 //-----------------------------------------------------------------------------
-dheader_t		s_MapHeader;
-
+static dheader_t		s_MapHeader;
 static FileHandle_t		s_MapFileHandle = FILESYSTEM_INVALID_HANDLE;
 static char				s_szLoadName[128];
 static char				s_szMapName[128];
 static worldbrushdata_t	*s_pMap = NULL;
 static int				s_nMapLoadRecursion = 0;
 static CUtlBuffer		s_MapBuffer;
-
-int s_MapVersion = 0;
 
 // Lump files are patches for a shipped map
 // List of lump files found when map was loaded. Each entry is the lump file index for that lump id.
@@ -470,8 +467,6 @@ void CMapLoadHelper::Init( model_t *pMapModel, const char *loadname )
 			s_MapHeader.version, BSPVERSION );
 		return;
 	}
-
-	s_MapVersion = s_MapHeader.version;
 
 	V_strcpy_safe( s_szLoadName, loadname );
 
@@ -956,13 +951,13 @@ void EnableHDR( bool bEnable )
 	///             ancient bugs, hence the kill switch.
 	bool bUpdateOffline = mod_offline_hdr_switch.GetBool();
 #ifndef DEDICATED
-	extern void V_RenderSwapBuffers();
+	extern void V_RenderVGuiOnly();
 #endif
 
 	if ( bUpdateOffline )
 	{
 #ifndef DEDICATED
-		V_RenderSwapBuffers();
+		V_RenderVGuiOnly();
 #endif
 		materials->ReleaseResources();
 	}
@@ -986,7 +981,7 @@ void EnableHDR( bool bEnable )
 #ifndef DEDICATED
 	if ( bUpdateOffline )
 	{
-		V_RenderSwapBuffers();
+		V_RenderVGuiOnly();
 	}
 #endif
 }
@@ -1148,55 +1143,9 @@ void Mod_LoadWorldlights( CMapLoadHelper &lh, bool bIsHDR )
 		lh.GetMap()->worldlights = NULL;
 		return;
 	}
-
-	switch ( lh.LumpVersion() )
-	{
-		case LUMP_WORLDLIGHTS_VERSION:
-		{
-			lh.GetMap()->numworldlights = lh.LumpSize() / sizeof( dworldlight_t );
-			lh.GetMap()->worldlights = (dworldlight_t *)Hunk_AllocName( lh.LumpSize(), va( "%s [%s]", lh.GetLoadName(), "worldlights" ) );
-			memcpy( lh.GetMap()->worldlights, lh.LumpBase(), lh.LumpSize() );
-			break;
-		}
-
-		case 0:
-		{
-			int nNumWorldLights = lh.LumpSize() / sizeof( dworldlight_version0_t );
-			lh.GetMap()->numworldlights = nNumWorldLights;
-			lh.GetMap()->worldlights = (dworldlight_t *)Hunk_AllocName( nNumWorldLights * sizeof( dworldlight_t ), va( "%s [%s]", lh.GetLoadName(), "worldlights" ) );
-			dworldlight_version0_t* RESTRICT pOldWorldLight = reinterpret_cast<dworldlight_version0_t*>( lh.LumpBase() );
-			dworldlight_t* RESTRICT pNewWorldLight = lh.GetMap()->worldlights;
-
-			for ( int i = 0; i < nNumWorldLights; i++ )
-			{
-				pNewWorldLight->origin			= pOldWorldLight->origin;
-				pNewWorldLight->intensity		= pOldWorldLight->intensity;
-				pNewWorldLight->normal			= pOldWorldLight->normal;
-				pNewWorldLight->shadow_cast_offset.Init( 0.0f, 0.0f, 0.0f );
-				pNewWorldLight->cluster			= pOldWorldLight->cluster;
-				pNewWorldLight->type			= pOldWorldLight->type;
-				pNewWorldLight->style			= pOldWorldLight->style;
-				pNewWorldLight->stopdot			= pOldWorldLight->stopdot;
-				pNewWorldLight->stopdot2		= pOldWorldLight->stopdot2;
-				pNewWorldLight->exponent		= pOldWorldLight->exponent;
-				pNewWorldLight->radius			= pOldWorldLight->radius;
-				pNewWorldLight->constant_attn	= pOldWorldLight->constant_attn;	
-				pNewWorldLight->linear_attn		= pOldWorldLight->linear_attn;
-				pNewWorldLight->quadratic_attn	= pOldWorldLight->quadratic_attn;
-				pNewWorldLight->flags			= pOldWorldLight->flags;
-				pNewWorldLight->texinfo			= pOldWorldLight->texinfo;
-				pNewWorldLight->owner			= pOldWorldLight->owner;
-				pNewWorldLight++;
-				pOldWorldLight++;
-			}
-			break;
-		}
-
-		default:
-			Host_Error( "Invalid worldlight lump version!\n" );
-			break;
-	}
-
+	lh.GetMap()->numworldlights = lh.LumpSize() / sizeof( dworldlight_t );
+	lh.GetMap()->worldlights = (dworldlight_t *)Hunk_AllocName( lh.LumpSize(), va( "%s [%s]", lh.GetLoadName(), "worldlights" ) );
+	memcpy (lh.GetMap()->worldlights, lh.LumpBase(), lh.LumpSize());
 #if !defined( SWDS )
 	if ( r_lightcache_zbuffercache.GetInt() )
 	{
@@ -1882,7 +1831,7 @@ void *Hunk_AllocNameAlignedClear_( int size, int alignment, const char *pHunkNam
 	Assert(IsPowerOfTwo(alignment));
 	void *pMem = Hunk_AllocName( alignment + size, pHunkName );
 	memset( pMem, 0, size + alignment );
-	pMem = (void *)( ( ( ( uintp )pMem ) + (alignment-1) ) & ~(alignment-1) );
+	pMem = (void *)( ( ( ( unsigned long )pMem ) + (alignment-1) ) & ~(alignment-1) );
 
 	return pMem;
 }
@@ -1920,12 +1869,6 @@ void Mod_LoadFaces( void )
 
 	// align these allocations
 	// If you trip one of these, you need to rethink the alignment of the struct
-#ifdef PLATFORM_64BITS
-    msurface1_t *out1 = Hunk_AllocNameAlignedClear< msurface1_t >( count, alignof(msurface1_t), va( "%s [%s]", lh.GetLoadName(), "surface1" ) );
-    msurface2_t *out2 = Hunk_AllocNameAlignedClear< msurface2_t >( count, alignof(msurface2_t), va( "%s [%s]", lh.GetLoadName(), "surface2" ) );
-
-    msurfacelighting_t *pLighting = Hunk_AllocNameAlignedClear< msurfacelighting_t >( count, alignof(msurfacelighting_t), va( "%s [%s]", lh.GetLoadName(), "surfacelighting" ) );
-#else
 	Assert( sizeof(msurface1_t) == 16 );
 	Assert( sizeof(msurface2_t) == 32 );
 	Assert( sizeof(msurfacelighting_t) == 32 );
@@ -1934,7 +1877,6 @@ void Mod_LoadFaces( void )
 	msurface2_t *out2 = Hunk_AllocNameAlignedClear< msurface2_t >( count, 32, va( "%s [%s]", lh.GetLoadName(), "surface2" ) );
 
 	msurfacelighting_t *pLighting = Hunk_AllocNameAlignedClear< msurfacelighting_t >( count, 32, va( "%s [%s]", lh.GetLoadName(), "surfacelighting" ) );
-#endif
 
 	lh.GetMap()->surfaces1 = out1;
 	lh.GetMap()->surfaces2 = out2;
@@ -2918,7 +2860,7 @@ void Mod_TouchAllData( model_t *pModel, int nServerCount )
 		// skip self, start at children
 		for ( int i=1; i<pVirtualModel->m_group.Count(); ++i )
 		{
-			MDLHandle_t childHandle = (MDLHandle_t)(intp)pVirtualModel->m_group[i].cache&0xffff;
+			MDLHandle_t childHandle = (MDLHandle_t)(int)pVirtualModel->m_group[i].cache&0xffff;
 			model_t *pChildModel = (model_t *)g_pMDLCache->GetUserData( childHandle );
 			if ( pChildModel )
 			{
@@ -4383,7 +4325,7 @@ public:
 		m_pShared = pBrush->brush.pShared;
 		m_count = 0;
 	}
-	bool EnumerateLeaf( int leaf, intp )
+	bool EnumerateLeaf( int leaf, int )
 	{
 		// garymcthack - need to test identity brush models
 		int flags = ( m_pShared->leafs[leaf].leafWaterDataID == -1 ) ? SURFDRAW_ABOVEWATER : SURFDRAW_UNDERWATER;
@@ -4430,7 +4372,7 @@ static void MarkBrushModelWaterSurfaces( model_t* world,
 	model_t* pTemp = host_state.worldmodel;
 	CBrushBSPIterator brushIterator( world, brush );
 	host_state.SetWorldModel( world );
-	g_pToolBSPTree->EnumerateLeavesInBox( mins, maxs, &brushIterator, (intp)brush );
+	g_pToolBSPTree->EnumerateLeavesInBox( mins, maxs, &brushIterator, (int)brush );
 	brushIterator.CheckSurfaces();
 	host_state.SetWorldModel( pTemp );
 }
@@ -5452,15 +5394,6 @@ bool CModelLoader::Map_IsValid( char const *pMapFile, bool bQuiet /* = false */ 
 		UpdateOrCreate( szMapFile, szMapName360, sizeof( szMapName360 ), false );
 		V_strcpy_safe( szMapFile, szMapName360 );
 	}
-
-	bool bHaveBspFormatInPath = strstr(szMapFile, ".bsp");
-	bool bHaveMapsInPath = strstr(szMapFile, "maps/");
-
-	if( !bHaveMapsInPath )
-		snprintf(szMapFile, sizeof(szMapFile), "maps/%s", pMapFile);
-
-	if( !bHaveBspFormatInPath )
-		strncat(szMapFile, ".bsp", sizeof(szMapFile));
 
 	mapfile = g_pFileSystem->OpenEx( szMapFile, "rb", IsX360() ? FSOPEN_NEVERINPACK : 0, "GAME" );
 	if ( mapfile != FILESYSTEM_INVALID_HANDLE )

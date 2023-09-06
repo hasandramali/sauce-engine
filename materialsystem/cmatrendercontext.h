@@ -34,7 +34,7 @@
 class ITextureInternal;
 class CMaterialSystem;
 class CMatLightmaps;
-typedef intp ShaderAPITextureHandle_t;
+typedef int ShaderAPITextureHandle_t;
 class IMorphMgrRenderContext;
 class CMatCallQueue;
 

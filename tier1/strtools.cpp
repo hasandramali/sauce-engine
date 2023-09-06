@@ -47,6 +47,7 @@
 #include <stdarg.h>
 
 #ifdef POSIX
+#include <iconv.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -78,12 +79,7 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 #include "tier0/memdbgon.h"
-
-#ifdef ANDROID
-#include "common/android/iconv.h"
-#elif POSIX
-#include <iconv.h>
-#endif
+#include "iconv.h"
 
 static int FastToLower( char c )
 {
@@ -2019,9 +2015,6 @@ bool V_StripLastDir( char *dirName, int maxlen )
 //-----------------------------------------------------------------------------
 const char * V_UnqualifiedFileName( const char * in )
 {
-	if( !in || !in[0] )
-		return in;
-
 	// back up until the character after the first path separator we find,
 	// or the beginning of the string
 	const char * out = in + strlen( in ) - 1;
@@ -2953,7 +2946,7 @@ extern "C" void qsort_s( void *base, size_t num, size_t width, int (*compare )(v
 
 void V_qsort_s( void *base, size_t num, size_t width, int ( __cdecl *compare )(void *, const void *, const void *), void * context ) 
 {
-#if defined(OSX) || defined(PLATFORM_BSD)
+#if defined OSX
 	// the arguments are swapped 'round on the mac - awesome, huh?
 	return qsort_r( base, num, width, context, compare );
 #else

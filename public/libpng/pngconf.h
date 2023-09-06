@@ -36,7 +36,7 @@
  * because this file defines png_memcpy and so on the base APIs must
  * be defined here.
  */
-#  ifdef PLATFORM_BSD
+#  ifdef BSD
 #    include <strings.h>
 #  else
 #    include <string.h>

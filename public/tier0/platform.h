@@ -9,16 +9,12 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#if defined(__x86_64__) || defined(_WIN64) || defined(__aarch64__)
+#if defined(__x86_64__) || defined(_WIN64)
 #define PLATFORM_64BITS 1
 #endif
 
 #if defined(__GCC__) || defined(__GNUC__)
 #define COMPILER_GCC 1
-#endif
-
-#ifdef __GLIBC__
-#define PLATFORM_GLIBC 1
 #endif
 
 #ifdef __clang__
@@ -68,21 +64,13 @@
 
 #ifdef POSIX
 // need this for _alloca
-# ifdef PLATFORM_BSD
-#  define va_list __va_list
-# else
-#  include <alloca.h>
-# endif
+#include <alloca.h>
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
 #endif
 
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #include <new>
 
 // need this for memset
@@ -112,7 +100,6 @@
 	#define IsLinux() false
 	#define IsOSX() false
 	#define IsPosix() false
-	#define IsBSD() false
 	#define PLATFORM_WINDOWS 1 // Windows PC or Xbox 360
 	#ifndef _X360
 		#define IsWindows() true
@@ -165,13 +152,7 @@
 	#else
 		#define IsOSX() false
 	#endif
-
-	#ifdef PLATFORM_BSD
-		#define IsBSD() true
-	#else
-		#define IsBSD() false
-	#endif
-
+	
 	#define IsPosix() true
 	#define IsPlatformOpenGL() true
 #else
@@ -189,9 +170,6 @@ typedef signed char int8;
 	typedef unsigned __int32		uint32;
 	typedef __int64					int64;
 	typedef unsigned __int64		uint64;
-
-    typedef int64 lint64;
-    typedef uint64 ulint64;
 
 	#ifdef PLATFORM_64BITS
 		typedef __int64 intp;				// intp is an integer that can accomodate a pointer
@@ -223,17 +201,13 @@ typedef signed char int8;
 	typedef unsigned int			uint32;
 	typedef long long				int64;
 	typedef unsigned long long		uint64;
-
-    typedef long int lint64;
-    typedef unsigned long int ulint64;
-
 	#ifdef PLATFORM_64BITS
 		typedef long long			intp;
 		typedef unsigned long long	uintp;
 	#else
 		typedef int					intp;
 		typedef unsigned int		uintp;
-    #endif
+	#endif
 	typedef void *HWND;
 
 	// Avoid redefinition warnings if a previous header defines this.
@@ -454,20 +428,10 @@ typedef void * HINSTANCE;
 #else
 	// On OSX, SIGTRAP doesn't really stop the thread cold when debugging.
 	// So if being debugged, use INT3 which is precise.
-#if defined(OSX) || defined(PLATFORM_BSD)
-# if defined(__arm__) || defined(__aarch64__)
-#  ifdef __clang__
-#   define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __builtin_debugtrap(); } else { raise(SIGTRAP); } } while(0)
-#  elif defined __GNUC__
-#   define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __builtin_trap(); } else { raise(SIGTRAP); } } while(0)
-#  else
-#   define DebuggerBreak()  raise(SIGTRAP)
-#  endif
-# else
-#  define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __asm ( "int $3" ); } else { raise(SIGTRAP); } } while(0)
-# endif
+#ifdef OSX
+#define DebuggerBreak()  if ( Plat_IsInDebugSession() ) { __asm ( "int $3" ); } else { raise(SIGTRAP); }
 #else
-# define DebuggerBreak()  raise(SIGTRAP)
+#define DebuggerBreak()  raise(SIGTRAP)
 #endif
 #endif
 #define	DebuggerBreakIfDebugging() if ( !Plat_IsInDebugSession() ) ; else DebuggerBreak()
@@ -540,16 +504,6 @@ typedef void * HINSTANCE;
 #error
 #endif
 
-// !!! NOTE: if you get a compile error here, you are using VALIGNOF on an abstract type :NOTE !!!
-#define VALIGNOF_PORTABLE( type ) ( sizeof( AlignOf_t<type> ) - sizeof( type ) )
-
-#if defined( COMPILER_GCC ) || defined( COMPILER_MSVC )
-#define VALIGNOF( type ) __alignof( type )
-#define VALIGNOF_TEMPLATE_SAFE( type ) VALIGNOF_PORTABLE( type )
-#else
-#error "PORT: Code only tested with MSVC! Must validate with new compiler, and use built-in keyword if available."
-#endif
-
 // Pull in the /analyze code annotations.
 #include "annotations.h"
 
@@ -565,7 +519,7 @@ typedef void * HINSTANCE;
 //-----------------------------------------------------------------------------
 #if defined( GNUC )
 	#define stackalloc( _size )		alloca( ALIGN_VALUE( _size, 16 ) )
-#if defined(_LINUX) || defined(PLATFORM_BSD)
+#ifdef _LINUX
 	#define mallocsize( _p )	( malloc_usable_size( _p ) )
 #elif defined(OSX)
 	#define mallocsize( _p )	( malloc_size( _p ) )
@@ -610,22 +564,6 @@ typedef void * HINSTANCE;
 	#define FMTFUNCTION( a, b )
 #endif
 
-#if defined(__has_feature)
-#if __has_feature(address_sanitizer)
-#define USING_ASAN 1
-#endif
-#endif
-
-#if !defined( USING_ASAN ) && defined( __SANITIZE_ADDRESS__ )
-#define USING_ASAN 1
-#endif
-
-#if COMPILER_CLANG || COMPILER_GCC
-#define NO_ASAN __attribute__((no_sanitize("address")))
-#else
-#define NO_ASAN
-#endif
-
 #if defined( _WIN32 )
 
 	// Used for dll exporting and importing
@@ -662,7 +600,6 @@ typedef void * HINSTANCE;
 #endif
 
 // Used for standard calling conventions
-
 #if defined( _WIN32 ) && !defined( _X360 )
 	#define  STDCALL				__stdcall
 	#define  FASTCALL				__fastcall
@@ -718,11 +655,6 @@ typedef void * HINSTANCE;
 
 
 #ifdef _WIN32
-
-#ifdef __SANITIZE_ADDRESS__
-#undef FORCEINLINE
-#define FORCEINLINE static
-#endif
 
 // Remove warnings from warning level 4.
 #pragma warning(disable : 4514) // warning C4514: 'acosl' : unreferenced inline function has been removed
@@ -820,7 +752,7 @@ typedef void * HINSTANCE;
 #define _wtoi(arg) wcstol(arg, NULL, 10)
 #define _wtoi64(arg) wcstoll(arg, NULL, 10)
 
-typedef uintp HMODULE;
+typedef uint32 HMODULE;
 typedef void *HANDLE;
 #endif
 
@@ -898,7 +830,7 @@ static FORCEINLINE double fsel(double fComparand, double fValGE, double fLT)
 
 		#endif
 	#endif
-#elif defined (__arm__) || defined (__aarch64__)
+#elif defined (__arm__)
 	inline void SetupFPUControlWord() {}
 #else
 	inline void SetupFPUControlWord()
@@ -1069,7 +1001,7 @@ inline T QWordSwapC( T dw )
 // The typically used methods.
 //-------------------------------------
 
-#if (defined(__i386__) || defined(__amd64__) || defined(__arm__) || defined(__aarch64__)) && !defined(VALVE_LITTLE_ENDIAN)
+#if (defined(__i386__) || (defined(__arm__) && defined(ANDROID))) && !defined(VALVE_LITTLE_ENDIAN)
 #define VALVE_LITTLE_ENDIAN 1
 #endif
 
@@ -1162,12 +1094,12 @@ FORCEINLINE void StoreLittleDWord( unsigned long *base, unsigned int dwordIndex,
 			__storewordbytereverse( dword, dwordIndex<<2, base );
 		}
 #else
-FORCEINLINE uint32 LoadLittleDWord( const uint32 *base, unsigned int dwordIndex )
+FORCEINLINE unsigned long LoadLittleDWord( const unsigned long *base, unsigned int dwordIndex )
 	{
 		return LittleDWord( base[dwordIndex] );
 	}
 
-FORCEINLINE void StoreLittleDWord( uint32 *base, unsigned int dwordIndex, uint32 dword )
+FORCEINLINE void StoreLittleDWord( unsigned long *base, unsigned int dwordIndex, unsigned long dword )
 	{
 		base[dwordIndex] = LittleDWord(dword);
 	}
@@ -1235,7 +1167,7 @@ PLATFORM_INTERFACE struct tm *		Plat_localtime( const time_t *timep, struct tm *
 
 inline uint64 Plat_Rdtsc()
 {
-#if (defined( __arm__ ) || defined( __aarch64__ )) && defined (POSIX)
+#if defined( __arm__ ) && defined (POSIX)
 	struct timespec t;
 	clock_gettime( CLOCK_REALTIME, &t);
 	return t.tv_sec * 1000000000ULL + t.tv_nsec;
@@ -1297,12 +1229,12 @@ struct CPUInformation
 
 	uint8 m_nLogicalProcessors;		// Number op logical processors.
 	uint8 m_nPhysicalProcessors;	// Number of physical processors
-
+	
 	bool m_bSSE3 : 1,
 		 m_bSSSE3 : 1,
 		 m_bSSE4a : 1,
 		 m_bSSE41 : 1,
-		 m_bSSE42 : 1;
+		 m_bSSE42 : 1;	
 
 	int64 m_Speed;						// In cycles per second.
 
@@ -1311,7 +1243,7 @@ struct CPUInformation
 	uint32 m_nModel;
 	uint32 m_nFeatures[3];
 
-	CPUInformation() = default;
+	CPUInformation(): m_Size(0){}
 };
 
 // Have to return a pointer, not a reference, because references are not compatible with the
@@ -1408,11 +1340,10 @@ PLATFORM_INTERFACE void* Plat_SimpleLog( const tchar* file, int line );
 //-----------------------------------------------------------------------------
 // Returns true if debugger attached, false otherwise
 //-----------------------------------------------------------------------------
-#if defined(_WIN32) || defined(LINUX) || defined(OSX) || defined(PLATFORM_BSD)
+#if defined(_WIN32) || defined(LINUX) || defined(OSX)
 PLATFORM_INTERFACE bool Plat_IsInDebugSession();
 PLATFORM_INTERFACE void Plat_DebugString( const char * );
 #else
-#warning "Plat_IsInDebugSession isn't working properly"
 inline bool Plat_IsInDebugSession( bool bForceRecheck = false ) { return false; }
 #define Plat_DebugString(s) ((void)0)
 #endif
@@ -1548,7 +1479,7 @@ inline void ConstructThreeArg( T* pMemory, P1 const& arg1, P2 const& arg2, P3 co
 template <class T>
 inline T* CopyConstruct( T* pMemory, T const& src )
 {
-	return ::new( pMemory ) T(src);
+	return reinterpret_cast<T*>(::new( pMemory ) T(src));
 }
 
 template <class T>

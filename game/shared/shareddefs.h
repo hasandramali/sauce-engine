@@ -30,7 +30,7 @@
 class CViewVectors
 {
 public:
-	CViewVectors() = default;
+	CViewVectors() {}
 
 	CViewVectors( 
 		Vector vView,
@@ -232,7 +232,7 @@ enum CastVote
 
 #define MAX_PLACE_NAME_LENGTH		18
 
-#define MAX_FOV						110
+#define MAX_FOV						90
 
 //===================================================================================================================
 // Team Defines

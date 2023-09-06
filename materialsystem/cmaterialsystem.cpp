@@ -444,7 +444,7 @@ void CMaterialSystem::CreateCompositorMaterials()
 
 		IMaterialInternal *pMatqf = assert_cast< IMaterialInternal* >( FindMaterial( pszMaterial, TEXTURE_GROUP_RUNTIME_COMPOSITE ) );
 		Assert( pMatqf );
-		//Assert( !pMatqf->IsErrorMaterial() );
+		Assert( !pMatqf->IsErrorMaterial() );
 		IMaterialInternal *pMatrt = pMatqf->GetRealTimeVersion();
 		Assert( pMatrt );
 		pMatrt->IncrementReferenceCount(); // Hold a ref.
@@ -517,7 +517,7 @@ void CMaterialSystem::CleanUpErrorMaterial()
 //-----------------------------------------------------------------------------
 CMaterialSystem::CMaterialSystem()
 {
-	m_nRenderThreadID = (uintp)-1;
+	m_nRenderThreadID = 0xFFFFFFFF;
 	m_hAsyncLoadFileCache = NULL;
 	m_ShaderHInst = 0;
 	m_pMaterialProxyFactory = NULL;
@@ -1029,7 +1029,7 @@ bool CMaterialSystem::AllowThreading( bool bAllow, int nServiceThread )
 
 	bool bOldAllow = m_bAllowQueuedRendering;
 
-	if ( GetCPUInformation()->m_nLogicalProcessors >= 2 )
+	if ( GetCPUInformation()->m_nPhysicalProcessors >= 2 )
 	{
 		m_bAllowQueuedRendering = bAllow;
 		bool bQueued = m_IdealThreadMode != MATERIAL_SINGLE_THREADED;
@@ -1769,7 +1769,12 @@ static ConVar mat_phong(			"mat_phong", "1" );
 static ConVar mat_parallaxmap(		"mat_parallaxmap", "1", FCVAR_HIDDEN | FCVAR_ALLOWED_IN_COMPETITIVE );
 static ConVar mat_reducefillrate(	"mat_reducefillrate", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
 
-static ConVar mat_picmip(			"mat_picmip", "0", FCVAR_ARCHIVE, "", true, -32, true, 8 );
+#if defined( OSX ) && !defined( STAGING_ONLY ) && !defined( _DEBUG )
+// OSX users are currently running OOM. We limit them to texture quality high here, which avoids the problem while we come up with a real solution.
+static ConVar mat_picmip(			"mat_picmip", "1", FCVAR_ARCHIVE, "", true, 0, true, 4 );
+#else
+static ConVar mat_picmip(			"mat_picmip", "0", FCVAR_ARCHIVE, "", true, -1, true, 4 );
+#endif
 static ConVar mat_slopescaledepthbias_normal( "mat_slopescaledepthbias_normal", "0.0f", FCVAR_CHEAT );
 static ConVar mat_depthbias_normal( "mat_depthbias_normal", "0.0f", FCVAR_CHEAT | FCVAR_ALLOWED_IN_COMPETITIVE );
 static ConVar mat_slopescaledepthbias_decal( "mat_slopescaledepthbias_decal", "-0.5", FCVAR_CHEAT );		// Reciprocals of these biases sent to API
@@ -1806,7 +1811,11 @@ static ConVar mat_normalmaps(		"mat_normalmaps", "0", FCVAR_CHEAT );
 static ConVar mat_measurefillrate(	"mat_measurefillrate", "0", FCVAR_CHEAT );
 static ConVar mat_fillrate(			"mat_fillrate", "0", FCVAR_CHEAT );
 static ConVar mat_reversedepth(		"mat_reversedepth", "0", FCVAR_CHEAT );
+#ifdef DX_TO_GL_ABSTRACTION
+static ConVar mat_bufferprimitives( "mat_bufferprimitives", "0" );	// I'm not seeing any benefit speed wise for buffered primitives on GLM/POSIX (checked via TF2 timedemo) - default to zero
+#else
 static ConVar mat_bufferprimitives( "mat_bufferprimitives", "1" );
+#endif
 static ConVar mat_drawflat(			"mat_drawflat","0", FCVAR_CHEAT );
 static ConVar mat_softwarelighting( "mat_softwarelighting", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
 static ConVar mat_proxy(			"mat_proxy", "0", FCVAR_CHEAT, "", MatProxyCallback );
@@ -1881,13 +1890,7 @@ void CMaterialSystem::ReadConfigFromConVars( MaterialSystem_Config_t *pConfig )
 	pConfig->bMipMapTextures = mat_mipmaptextures.GetInt() ? true : false;
 	pConfig->nShowMipLevels = mat_showmiplevels.GetInt();
 	pConfig->bReverseDepth = mat_reversedepth.GetInt() ? true : false;
-
-#ifdef DX_TO_GL_ABSTRACTION
-	pConfig->bBufferPrimitives = false; // nillerusr: causes rendering bugs and sefaults with nvidia driver
-#else
 	pConfig->bBufferPrimitives = mat_bufferprimitives.GetInt() ? true : false;
-#endif
-
 	pConfig->bDrawFlat = mat_drawflat.GetInt() ? true : false;
 	pConfig->bSoftwareLighting = mat_softwarelighting.GetInt() ? true : false;
 	pConfig->proxiesTestMode = mat_proxy.GetInt();
@@ -3102,12 +3105,20 @@ void CMaterialSystem::ResetTempHWMemory( bool bExitingLevel )
 //-----------------------------------------------------------------------------
 void CMaterialSystem::CacheUsedMaterials( )
 {
-	printf("Cache materials\n");
-
 	g_pShaderAPI->EvictManagedResources();
-
+	size_t count = 0;
 	for (MaterialHandle_t i = FirstMaterial(); i != InvalidMaterial(); i = NextMaterial(i) )
 	{
+		// Some (mac) drivers (amd) seem to keep extra resources around on uploads until the next frame swap.  This
+		// injects pointless synthetic swaps (between already-static load frames)
+		if ( mat_texture_reload_frame_swap_workaround.GetBool() )
+		{
+			if ( count++ % 20 == 0 )
+			{
+				Flush(true);
+				SwapBuffers(); // Not the right thing to call
+			}
+		}
 		IMaterialInternal* pMat = GetMaterialInternal(i);
 		Assert( pMat->GetReferenceCount() >= 0 );
 		if( pMat->GetReferenceCount() > 0 )
@@ -3536,7 +3547,7 @@ void CMaterialSystem::ThreadExecuteQueuedContext( CMatQueuedRenderContext *pCont
 	m_pRenderContext.Set( &m_HardwareRenderContext );
 	pContext->EndQueue( true );
 	m_pRenderContext.Set( pSavedRenderContext );
-	m_nRenderThreadID = (uintp)-1;
+	m_nRenderThreadID = 0xFFFFFFFF; 
 }
 
 IThreadPool *CMaterialSystem::CreateMatQueueThreadPool()
@@ -3694,13 +3705,9 @@ void CMaterialSystem::EndFrame( void )
 				ThreadAcquire( true );
 			}
 
-			IThreadPool* pThreadPool = CreateMatQueueThreadPool();
-
 			if ( m_pActiveAsyncJob && !m_pActiveAsyncJob->IsFinished() )
 			{
-				m_pActiveAsyncJob->WaitForFinish(TT_INFINITE, pThreadPool);
-
-				// Sync with GPU if we had a job for it, even if it finished early on CPU!
+				m_pActiveAsyncJob->WaitForFinish();
 				if ( !IsPC() && g_config.ForceHWSync() )
 				{
 					g_pShaderAPI->ForceHardwareSync();
@@ -3725,6 +3732,7 @@ void CMaterialSystem::EndFrame( void )
 				}
 			}
 
+			IThreadPool *pThreadPool = CreateMatQueueThreadPool();
 			pThreadPool->AddJob( m_pActiveAsyncJob );
 			break;
 		}
@@ -4658,8 +4666,19 @@ void CMaterialSystem::BeginRenderTargetAllocation( void )
 
 void CMaterialSystem::EndRenderTargetAllocation( void )
 {
+	// Any GPU newer than 2005 doesn't need to do this, and it eats up ~40% of our level load time! 
+	const bool cbRequiresRenderTargetAllocationFirst = mat_requires_rt_alloc_first.GetBool();
+
 	g_pShaderAPI->FlushBufferedPrimitives();
 	m_bAllocatingRenderTargets = false;
+
+	if ( IsPC() && cbRequiresRenderTargetAllocationFirst && g_pShaderAPI->CanDownloadTextures() )
+	{
+		// Simulate an Alt-Tab...will cause RTs to be allocated first
+
+		g_pShaderDevice->ReleaseResources();
+		g_pShaderDevice->ReacquireResources();
+	}
 
 	TextureManager()->CacheExternalStandardRenderTargets();
 }

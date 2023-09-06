@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------
 
 $Macro SRCDIR		".."
-$Macro OUTBINDIR	"$SRCDIR\..\game\bin"
+$Macro OUTBINDIR	"$LIBPUBLIC"
 
 $Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
 $include "$SRCDIR\vpc_scripts\source_cryptlib_include.vpc"
@@ -142,7 +142,6 @@ $Project "Dedicated"
 		$Lib	tier2
 		$Lib	tier3
 		$Lib	vgui_controls [$WIN32]
-		$Lib 	vpklib
 		$LibExternal "$SRCDIR/thirdparty/libedit-3.1/src/.libs/libedit" [$LINUXALL]
 		$ImpLibExternal steam_api
 		$ImpLib SDL2 [$SDL]

@@ -1,3 +1,8 @@
+
+hk_Transform::hk_Transform()
+{
+}
+
 hk_Vector3& hk_Transform::get_translation()
 {
 	return m_translation;

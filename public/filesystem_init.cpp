@@ -307,9 +307,6 @@ static bool Sys_GetExecutableName( char *out, int len )
 
 bool FileSystem_GetExecutableDir( char *exedir, int exeDirLen )
 {
-#ifdef ANDROID
-	Q_snprintf( exedir, exeDirLen, "%s", getenv("APP_LIB_PATH") );
-#else
 	exedir[0] = 0;
 
 	if ( s_bUseVProjectBinDir )
@@ -344,7 +341,11 @@ bool FileSystem_GetExecutableDir( char *exedir, int exeDirLen )
 
 	Q_FixSlashes( exedir );
 
+#ifdef ANDROID
+	const char* libDir = "lib";
+#else
 	const char* libDir = "bin";
+#endif
 
 	// Return the bin directory as the executable dir if it's not in there
 	// because that's really where we're running from...
@@ -356,7 +357,6 @@ bool FileSystem_GetExecutableDir( char *exedir, int exeDirLen )
 		Q_strncat( exedir, libDir, exeDirLen, COPY_ALL_CHARACTERS );
 		Q_FixSlashes( exedir );
 	}
-#endif
 
 	return true;
 }
@@ -591,7 +591,6 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 
 		FOR_EACH_VEC( vecPaths, idxExtraPath )
 		{
-			FileSystem_AddLoadedSearchPath( initInfo, "PLATFORM", vecPaths[idxExtraPath], false );
 			FileSystem_AddLoadedSearchPath( initInfo, "GAME", vecPaths[idxExtraPath], false );
 		}
 	}

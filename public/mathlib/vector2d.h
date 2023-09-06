@@ -36,16 +36,7 @@ public:
 	vec_t x, y;
 
 	// Construction/destruction
-#if defined( _DEBUG ) && defined( VECTOR_PARANOIA )
-	inline Vector2D(void)
-	{
-		// Initialize to NAN to catch errors
-		x = y = VEC_T_NAN;
-	}
-#else
-	Vector2D(void) = default;
-#endif
-
+	Vector2D(void);
 	Vector2D(vec_t X, vec_t Y);
 	Vector2D(const float *pFloat);
 
@@ -203,6 +194,15 @@ void Vector2DLerp(const Vector2D& src1, const Vector2D& src2, vec_t t, Vector2D&
 //-----------------------------------------------------------------------------
 // constructors
 //-----------------------------------------------------------------------------
+
+inline Vector2D::Vector2D(void)									
+{ 
+#ifdef _DEBUG
+	// Initialize to NAN to catch errors
+	x = y = VEC_T_NAN;
+#endif
+}
+
 inline Vector2D::Vector2D(vec_t X, vec_t Y)						
 { 
 	x = X; y = Y;

@@ -543,7 +543,7 @@ struct AsyncCaptionData_t
 		data->m_nBlockNum = params.blocktoload;
 		data->m_nFileIndex = params.fileindex;
 		data->m_nBlockSize = params.blocksize;
-		data->m_pBlockData = new byte[ data->m_nBlockSize * sizeof(ucs2) ];
+		data->m_pBlockData = new byte[ data->m_nBlockSize ];
 		return data;
 	}
 
@@ -819,8 +819,6 @@ CHudCloseCaption::CHudCloseCaption( const char *pElementName )
 {
 	vgui::Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
-
-	SetProportional( true );
 
 	m_nGoalHeight = 0;
 	m_nCurrentHeight = 0;
@@ -1577,17 +1575,17 @@ void CHudCloseCaption::CreateFonts( void )
 {
 	vgui::IScheme *pScheme = vgui::scheme()->GetIScheme( GetScheme() );
 
-	m_hFonts[CCFONT_NORMAL] = pScheme->GetFont( "CloseCaption_Normal", true );
+	m_hFonts[CCFONT_NORMAL] = pScheme->GetFont( "CloseCaption_Normal" );
 
 	if ( IsPC() )
 	{
-		m_hFonts[CCFONT_BOLD] = pScheme->GetFont( "CloseCaption_Bold", true );
-		m_hFonts[CCFONT_ITALIC] = pScheme->GetFont( "CloseCaption_Italic", true );
-		m_hFonts[CCFONT_ITALICBOLD] = pScheme->GetFont( "CloseCaption_BoldItalic", true );
+		m_hFonts[CCFONT_BOLD] = pScheme->GetFont( "CloseCaption_Bold" );
+		m_hFonts[CCFONT_ITALIC] = pScheme->GetFont( "CloseCaption_Italic" );
+		m_hFonts[CCFONT_ITALICBOLD] = pScheme->GetFont( "CloseCaption_BoldItalic" );
 	}
 	else
 	{
-		m_hFonts[CCFONT_SMALL] = pScheme->GetFont( "CloseCaption_Small", true );
+		m_hFonts[CCFONT_SMALL] = pScheme->GetFont( "CloseCaption_Small" );
 	}
 
 	m_nLineHeight = MAX( 6, vgui::surface()->GetFontTall( m_hFonts[ CCFONT_NORMAL ] ) );
@@ -2025,10 +2023,9 @@ public:
 				continue;
 
 			// Lookup the data
-			CaptionLookup_t &entry = directories[ caption->fileindex ].m_CaptionDirectory[ caption->dirindex ];
+			CaptionLookup_t &entry = directories[ nFileIndex ].m_CaptionDirectory[ caption->dirindex ];
 			if ( entry.blockNum != nBlockNum )
 				continue;
-
 
 #ifdef WIN32
 			const wchar_t *pIn = ( const wchar_t *)&pData->m_pBlockData[ entry.offset ];
@@ -2037,7 +2034,7 @@ public:
 #else
 			// we persist to disk as ucs2 so convert back to real unicode here
 			caption->stream = new wchar_t[ entry.length ];
-			V_UCS2ToUnicode( (ucs2 *)&pData->m_pBlockData[ entry.offset ], caption->stream, entry.length << 1 );
+			V_UCS2ToUnicode( (ucs2 *)&pData->m_pBlockData[ entry.offset ], caption->stream, entry.length*sizeof(wchar_t) );	
 #endif
 		}
 	}
@@ -2139,7 +2136,7 @@ public:
 		int dc = directories.Count();
 		for ( i = 0; i < dc; ++i )
 		{
-			idx = directories[ i ].m_CaptionDirectory.Find( search );
+            idx = directories[ i ].m_CaptionDirectory.Find( search );
 			if ( idx == directories[ i ].m_CaptionDirectory.InvalidIndex() )
 				continue;
 

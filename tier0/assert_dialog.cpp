@@ -386,7 +386,9 @@ DBG_INTERFACE bool ShouldUseNewAssertDialog()
 #endif // DBGFLAG_ASSERTDLG
 }
 
-#if defined( POSIX ) && PLATFORM_GLIBC
+#if defined( POSIX ) && !defined ( ANDROID )
+
+#include <execinfo.h>
 
 static void SpewBacktrace()
 {
@@ -439,7 +441,7 @@ DBG_INTERFACE bool DoNewAssertDialog( const tchar *pFilename, int line, const tc
 		        pFilename, line, pExpression);
 		if ( getenv( "POSIX_ASSERT_BACKTRACE" ) )
 		{
-#if PLATFORM_GLIBC
+#if !defined ( ANDROID )
 			SpewBacktrace();
 #endif
 		}

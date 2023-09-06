@@ -8,7 +8,7 @@
 
 #if defined( _X360 )
 #include <xboxmath.h>
-#elif defined(__arm__) || defined(__aarch64__)
+#elif defined(__arm__)
 #include "sse2neon.h"
 #else
 #include <xmmintrin.h>
@@ -1787,18 +1787,6 @@ FORCEINLINE fltx4 LoadAlignedSIMD( const VectorAligned & pSIMD )
 	return SetWToZeroSIMD( LoadAlignedSIMD(pSIMD.Base()) );
 }
 
-#ifdef __SANITIZE_ADDRESS__
-static __attribute__((no_sanitize("address"))) fltx4 LoadUnalignedSIMD( const void *pSIMD )
-{
-	return _mm_loadu_ps( reinterpret_cast<const float *>( pSIMD ) );
-
-}
-
-static __attribute__((no_sanitize("address"))) fltx4 LoadUnaligned3SIMD( const void *pSIMD )
-{
-	return _mm_loadu_ps( reinterpret_cast<const float *>( pSIMD ) );
-}
-#else
 FORCEINLINE fltx4 LoadUnalignedSIMD( const void *pSIMD )
 {
 	return _mm_loadu_ps( reinterpret_cast<const float *>( pSIMD ) );
@@ -1808,7 +1796,6 @@ FORCEINLINE fltx4 LoadUnaligned3SIMD( const void *pSIMD )
 {
 	return _mm_loadu_ps( reinterpret_cast<const float *>( pSIMD ) );
 }
-#endif
 
 /// replicate a single 32 bit integer value to all 4 components of an m128
 FORCEINLINE fltx4 ReplicateIX4( int i )
@@ -2604,20 +2591,15 @@ public:
 		return Vector( X(idx), Y(idx), Z(idx) );
 	}
 	
-	FourVectors(void) = default;
+	FourVectors(void)
+	{
+	}
 
 	FourVectors( FourVectors const &src )
 	{
 		x=src.x;
 		y=src.y;
 		z=src.z;
-	}
-
-	FourVectors( fltx4 x, fltx4 y, fltx4 z )
-	{
-		this->x=x;
-		this->y=y;
-		this->z=z;
 	}
 
 	FORCEINLINE void operator=( FourVectors const &src )

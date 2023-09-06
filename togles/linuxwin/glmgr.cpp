@@ -667,7 +667,7 @@ void GLMContext::DumpCaps( void )
 	#define	dumpfield_hex( fff )	printf( "\n  %-30s : 0x%08x", #fff, (int) m_caps.fff )
 	#define	dumpfield_str( fff )	printf( "\n  %-30s : %s", #fff, m_caps.fff )
 
-	printf("\n-------------------------------- context caps for context %zx", (size_t)this);
+	printf("\n-------------------------------- context caps for context %08x", (uint)this);
 
 	dumpfield( m_fullscreen );
 	dumpfield( m_accelerated );
@@ -2359,13 +2359,20 @@ static uint gPersistentBufferSize[kGLMNumBufferTypes] =
 
 GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 {
-	m_nNumDirtySamplers = 0;
-
-	if( gGL->m_nDriverProvider == cGLDriverProviderARM )
-		m_bUseSamplerObjects = true;
-	else
-		m_bUseSamplerObjects = false;
-
+// 	m_bUseSamplerObjects = true;
+// 	
+// 	// On most AMD drivers (like the current latest, 12.10 Windows), the PCF depth comparison mode doesn't work on sampler objects, so just punt them.
+// 	if ( gGL->m_nDriverProvider == cGLDriverProviderAMD )
+// 	{
+// 		m_bUseSamplerObjects = false;
+// 	}
+	
+// 	if ( CommandLine()->CheckParm( "-gl_disablesamplerobjects" ) )
+// 	{
+	// Disable sampler object usage for now since ScaleForm isn't aware of them
+	// and doesn't know how to push/pop their binding state. It seems we don't
+	// really use them in this codebase anyhow, except to preload textures.
+	m_bUseSamplerObjects = false;
 	if ( CommandLine()->CheckParm( "-gl_enablesamplerobjects" ) )
 		m_bUseSamplerObjects = true;
 
@@ -2692,7 +2699,6 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 		}
 	}
 
-/*
 	if ( m_caps.m_badDriver108Intel )
 	{
 		// this way we have something to look for in terminal spew if users report issues related to this in the future.
@@ -2702,7 +2708,6 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 			Warning( "Unable to enable OSX 10.8 / Intel HD4000 workaround, there might be crashes.\n" );
 		}
 	}
-*/
 
 #endif
 	// also, set the remote convar "gl_can_query_fast" to 1 if perf package present, else 0.
@@ -4501,7 +4506,7 @@ void GLMContext::GenDebugFontTex( void )
 		
 		//-----------------------------------------------------
 		// fetch elements of font data and make texels... we're doing the whole slab so we don't really need the stride info
-		uint32 *destTexelPtr = (uint32 *)lockAddress;
+		unsigned long *destTexelPtr = (unsigned long *)lockAddress;
 
 		for( int index = 0; index < 16384; index++ )
 		{
@@ -4901,7 +4906,7 @@ static inline uint GetDataTypeSizeInBytes( GLenum dataType )
 	return 0;
 }
 
-#if 1 //ifndef OSX
+#ifndef OSX
 
 void GLMContext::DrawRangeElementsNonInline( GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices, uint baseVertex, CGLMBuffer *pIndexBuf )
 {
@@ -4920,11 +4925,11 @@ void GLMContext::DrawRangeElementsNonInline( GLenum mode, GLuint start, GLuint e
 	if ( pIndexBuf->m_bPseudo )
 	{
 		// you have to pass actual address, not offset
-		indicesActual = (void*)( (intp)indicesActual + (intp)pIndexBuf->m_pPseudoBuf );
+		indicesActual = (void*)( (int)indicesActual + (int)pIndexBuf->m_pPseudoBuf );
 	}
 	if (pIndexBuf->m_bUsingPersistentBuffer)
 	{
-		indicesActual = (void*)( (intp)indicesActual + (intp)pIndexBuf->m_nPersistentBufferStartOffset );
+		indicesActual = (void*)( (int)indicesActual + (int)pIndexBuf->m_nPersistentBufferStartOffset );
 	}
 
 #if GL_ENABLE_INDEX_VERIFICATION

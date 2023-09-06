@@ -425,7 +425,7 @@ DWORD __stdcall DownloadThread( void *voidPtr )
 		//Thread_DPrintf( "Requesting full download\n%s", headers );
 	}
 
-	rc.hDataResource = InternetOpenUrl(rc.hOpenResource, fullURL, headerPtr, headerLen, flags, (DWORD_PTR)(&rc) );
+	rc.hDataResource = InternetOpenUrl(rc.hOpenResource, fullURL, headerPtr, headerLen, flags,(DWORD)(&rc) );
 
 	// send the request off
 	if ( !rc.hDataResource )
@@ -522,7 +522,7 @@ DWORD __stdcall DownloadThread( void *voidPtr )
 }
 
 
-#elif defined( POSIX ) && HAVE_CURL
+#elif defined( POSIX )
 
 #include "curl/curl.h"
 

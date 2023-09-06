@@ -357,7 +357,7 @@ IVP_Compact_Ledge *IVP_SurfaceBuilder_Pointsoup::try_to_build_convex_ledge_from_
 	      int max_index = 0;
 	      int max_index2 = 0;
 	      for (int i0 = 0; i0 < point_indizes.len(); i0++){
-        intp in = intp(point_indizes.element_at(i0));
+		int in = int(point_indizes.element_at(i0));
 		if (skip_list[in]) goto no_point_skipped;
 		IVP_U_Point *p2 = plane->points.element_at( i0 );
 		IVP_DOUBLE dist = plane->points.element_at( 0 )->quad_distance_to(p2);
@@ -383,7 +383,7 @@ IVP_Compact_Ledge *IVP_SurfaceBuilder_Pointsoup::try_to_build_convex_ledge_from_
 	      {
 		  for (int i2 = 0; i2 < point_indizes.len(); i2++){
 		    if (i2 != max_index2 && i2 != max_index) {
-              intp in = intp(point_indizes.element_at(i2));
+		      int in = int(point_indizes.element_at(i2));
 		      skip_list[in]++;
 		      IVP_ASSERT( use_list[in] );
 		      //printf("point removed %i %i\n",in, points->len());
@@ -663,7 +663,7 @@ IVP_Compact_Ledge *IVP_SurfaceBuilder_Pointsoup::convert_pointsoup_to_compact_le
   * FPU mode
   ************************************************/
   //doesnt work with threads !!
-#if defined WIN32 && !defined(PLATFORM_64BITS)
+#ifdef WIN32
   WORD tmpflag;
   __asm FSTCW tmpflag;
 
@@ -678,7 +678,7 @@ IVP_Compact_Ledge *IVP_SurfaceBuilder_Pointsoup::convert_pointsoup_to_compact_le
     } else { // use QHULL to convert pointsoup
 	return IVP_SurfaceBuilder_Pointsoup::convert_pointsoup_to_compact_ledge_internal(points);
     }
-#if defined WIN32 && !defined(PLATFORM_64BITS)
+#ifdef WIN32
   __asm FLDCW tmpflag;
 #endif
 }

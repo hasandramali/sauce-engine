@@ -1089,39 +1089,14 @@ public:
 
 	// Ugly code to lookup all functions to make sure they are in the table when set.
 #ifdef _DEBUG
-
-#ifdef PLATFORM_64BITS
-#ifdef GNUC
-#define ENTITYFUNCPTR_SIZE	16
-#else
-#define ENTITYFUNCPTR_SIZE	8
-#endif
-#else
-#ifdef GNUC
-#define ENTITYFUNCPTR_SIZE	8
-#else
-#define ENTITYFUNCPTR_SIZE	4
-#endif
-#endif
-
 	void FunctionCheck( void *pFunction, const char *name );
 
 	ENTITYFUNCPTR TouchSet( ENTITYFUNCPTR func, char *name ) 
 	{ 
-#ifdef _DEBUG
-#ifdef PLATFORM_64BITS
 #ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 16 );
+		COMPILE_TIME_ASSERT( sizeof(func) == 8 );
 #else
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#endif
-#else
-#ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#else
-	COMPILE_TIME_ASSERT( sizeof(func) == 4 );
-#endif
-#endif
+		COMPILE_TIME_ASSERT( sizeof(func) == 4 );
 #endif
 		m_pfnTouch = func; 
 		FunctionCheck( *(reinterpret_cast<void **>(&m_pfnTouch)), name ); 
@@ -1129,20 +1104,10 @@ public:
 	}
 	USEPTR	UseSet( USEPTR func, char *name ) 
 	{ 
-#ifdef _DEBUG
-#ifdef PLATFORM_64BITS
 #ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 16 );
+		COMPILE_TIME_ASSERT( sizeof(func) == 8 );
 #else
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#endif
-#else
-#ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#else
-	COMPILE_TIME_ASSERT( sizeof(func) == 4 );
-#endif
-#endif
+		COMPILE_TIME_ASSERT( sizeof(func) == 4 );
 #endif
 		m_pfnUse = func; 
 		FunctionCheck( *(reinterpret_cast<void **>(&m_pfnUse)), name ); 
@@ -1150,20 +1115,10 @@ public:
 	}
 	ENTITYFUNCPTR	BlockedSet( ENTITYFUNCPTR func, char *name ) 
 	{ 
-#ifdef _DEBUG
-#ifdef PLATFORM_64BITS
 #ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 16 );
+		COMPILE_TIME_ASSERT( sizeof(func) == 8 );
 #else
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#endif
-#else
-#ifdef GNUC
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
-#else
-	COMPILE_TIME_ASSERT( sizeof(func) == 4 );
-#endif
-#endif
+		COMPILE_TIME_ASSERT( sizeof(func) == 4 );
 #endif
 		m_pfnBlocked = func; 
 		FunctionCheck( *(reinterpret_cast<void **>(&m_pfnBlocked)), name ); 

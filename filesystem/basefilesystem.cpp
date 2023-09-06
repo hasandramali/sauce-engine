@@ -42,8 +42,6 @@
 #undef GetCurrentDirectory
 #endif
 
-#include <time.h>
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -227,7 +225,7 @@ CUtlVector< FileNameHandle_t > CBaseFileSystem::m_ExcludePaths;
 class CStoreIDEntry
 {
 public:
-	CStoreIDEntry() = default;
+	CStoreIDEntry() {}
 	CStoreIDEntry( const char *pPathIDStr, int storeID )
 	{
 		m_PathIDString = pPathIDStr;
@@ -1806,7 +1804,7 @@ const char *CBaseFileSystem::GetWritePath( const char *pFilename, const char *pa
 //-----------------------------------------------------------------------------
 // Reads/writes files to utlbuffers.  Attempts alignment fixups for optimal read
 //-----------------------------------------------------------------------------
-CTHREADLOCAL(char *) g_pszReadFilename;
+CThreadLocal<char *> g_pszReadFilename;
 bool CBaseFileSystem::ReadToBuffer( FileHandle_t fp, CUtlBuffer &buf, int nMaxBytes, FSAllocFunc_t pfnAlloc )
 {
 	SetBufferSize( fp, 0 );  // TODO: what if it's a pack file? restore buffer size?
@@ -2802,7 +2800,7 @@ unsigned int CBaseFileSystem::Size( const char* pFileName, const char *pPathID )
 //			*pFileName - 
 // Output : long
 //-----------------------------------------------------------------------------
-time_t CBaseFileSystem::FastFileTime( const CSearchPath *path, const char *pFileName )
+long CBaseFileSystem::FastFileTime( const CSearchPath *path, const char *pFileName )
 {
 	struct	_stat buf;
 
@@ -2841,7 +2839,7 @@ time_t CBaseFileSystem::FastFileTime( const CSearchPath *path, const char *pFile
 		{
 			return buf.st_mtime;
 		}
-#if defined(LINUX) || defined(PLATFORM_BSD)
+#ifdef LINUX
 		char caseFixedName[ MAX_PATH ];
 		bool found = findFileInDirCaseInsensitive_safe( pTmpFileName, caseFixedName );
 		if ( found && FS_stat( caseFixedName, &buf ) != -1 )
@@ -3325,7 +3323,7 @@ char *CBaseFileSystem::ReadLine( char *pOutput, int maxChars, FileHandle_t file 
 // Input  : *pFileName - 
 // Output : long
 //-----------------------------------------------------------------------------
-time_t CBaseFileSystem::GetFileTime( const char *pFileName, const char *pPathID )
+long CBaseFileSystem::GetFileTime( const char *pFileName, const char *pPathID )
 {
 	VPROF_BUDGET( "CBaseFileSystem::GetFileTime", VPROF_BUDGETGROUP_OTHER_FILESYSTEM );
 
@@ -3342,7 +3340,7 @@ time_t CBaseFileSystem::GetFileTime( const char *pFileName, const char *pPathID 
 
 	for ( CSearchPath *pSearchPath = iter.GetFirst(); pSearchPath != NULL; pSearchPath = iter.GetNext() )
 	{
-		time_t ft = FastFileTime( pSearchPath, tempFileName );
+		long ft = FastFileTime( pSearchPath, tempFileName );
 		if ( ft != 0L )
 		{
 			if ( !pSearchPath->GetPackFile() && m_LogFuncs.Count() )
@@ -3365,12 +3363,12 @@ time_t CBaseFileSystem::GetFileTime( const char *pFileName, const char *pPathID 
 			return ft;
 		}
 	}
-	return (time_t)0L;
+	return 0L;
 }
 
-time_t CBaseFileSystem::GetPathTime( const char *pFileName, const char *pPathID )
+long CBaseFileSystem::GetPathTime( const char *pFileName, const char *pPathID )
 {
-	VPROF_BUDGET( "CBaseFileSystem::GetPathTime", VPROF_BUDGETGROUP_OTHER_FILESYSTEM );
+	VPROF_BUDGET( "CBaseFileSystem::GetFileTime", VPROF_BUDGETGROUP_OTHER_FILESYSTEM );
 
 	CSearchPathsIterator iter( this, &pFileName, pPathID );
 
@@ -3381,10 +3379,10 @@ time_t CBaseFileSystem::GetPathTime( const char *pFileName, const char *pPathID 
 	Q_strlower( tempFileName );
 #endif
 
-	time_t pathTime = 0L;
+	long pathTime = 0L;
 	for ( CSearchPath *pSearchPath = iter.GetFirst(); pSearchPath != NULL; pSearchPath = iter.GetNext() )
 	{
-		time_t ft = FastFileTime( pSearchPath, tempFileName );
+		long ft = FastFileTime( pSearchPath, tempFileName );
 		if ( ft > pathTime )
 			pathTime = ft;
 		if ( ft != 0L )
@@ -3709,7 +3707,7 @@ void CBaseFileSystem::SetWhitelistSpewFlags( int flags )
 //			maxCharsIncludingTerminator - 
 //			fileTime - 
 //-----------------------------------------------------------------------------
-void CBaseFileSystem::FileTimeToString( char *pString, int maxCharsIncludingTerminator, time_t fileTime )
+void CBaseFileSystem::FileTimeToString( char *pString, int maxCharsIncludingTerminator, long fileTime )
 {
 	if ( IsX360() )
 	{
@@ -5042,11 +5040,10 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 
 	char tempPathID[ MAX_PATH ];
 	ParsePathID( pFileName, pPathID, tempPathID );
-
+	
 	CUtlSymbol lookup = g_PathIDTable.AddString( pPathID );
 
 	// a pathID has been specified, find the first match in the path list
-#ifndef ANDROID
 	int c = m_SearchPaths.Count();
 	for ( int i = 0; i < c; i++ )
 	{
@@ -5071,6 +5068,14 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 		if ( pModule )
 			return pModule;
 #endif
+	}
+
+
+#ifdef POSIX
+	if( !pModule )
+	{
+		Q_snprintf( tempPathID, sizeof(tempPathID), "lib%s", pFileName );
+		pModule = Sys_LoadModule( tempPathID );
 	}
 #endif
 

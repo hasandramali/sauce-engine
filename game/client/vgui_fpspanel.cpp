@@ -310,18 +310,12 @@ void CFPSPanel::Paint()
 			vel = player->GetLocalVelocity();
 		}
 
-		if( nShowPosMode > 1 )
-			g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * ( vgui::surface()->GetFontTall( m_hFont ) + 2 ), 
-											  255, 255, 255, 255, 
-											  "vel:  %.2f  %.2f  %.2f", 
-											  vel.x, vel.y, vel.z );
-		else
-			g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * ( vgui::surface()->GetFontTall( m_hFont ) + 2 ), 
+		g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * ( vgui::surface()->GetFontTall( m_hFont ) + 2 ), 
 											  255, 255, 255, 255, 
 											  "vel:  %.2f", 
 											  vel.Length() );
 	}
-
+	
 	if ( cl_showbattery.GetInt() > 0 )
 	{
 		if ( steamapicontext && steamapicontext->SteamUtils() && 

@@ -14,7 +14,7 @@
 
 #ifdef SUPPORT_PACKED_STORE
 
-uintp ThreadStubProcessMD5Requests( void *pParam )
+unsigned ThreadStubProcessMD5Requests( void *pParam )
 {
 	return ((CFileTracker2 *)pParam)->ThreadedProcessMD5Requests();
 }

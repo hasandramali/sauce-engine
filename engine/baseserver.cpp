@@ -56,7 +56,6 @@
 #include "sv_ipratelimit.h"
 #include "cl_steamauth.h"
 #include "sv_filter.h"
-#include "master.h"
 
 #if defined( _X360 )
 #include "xbox/xbox_win32stubs.h"
@@ -664,8 +663,6 @@ bool CBaseServer::ValidInfoChallenge( netadr_t & adr, const char *nugget )
 
 bool CBaseServer::ProcessConnectionlessPacket(netpacket_t * packet)
 {
-	master->ProcessConnectionlessPacket( packet );
-
 	bf_read msg = packet->message;	// handy shortcut 
 
 	char c = msg.ReadChar();
@@ -1404,12 +1401,12 @@ bool CBaseServer::CheckProtocol( netadr_t &adr, int nProtocol, int clientChallen
 		// Client is newer than server
 		if ( nProtocol > PROTOCOL_VERSION )
 		{
-			RejectConnection( adr, clientChallenge, "#GameUI_ServerRejectOldVersion" );
+			RejectConnection( adr, clientChallenge, "#GameUI_ServerRejectOldProtocol" );
 		}
 		else
 		// Server is newer than client
 		{
-			RejectConnection( adr, clientChallenge, "#GameUI_ServerRejectNewVersion" );
+			RejectConnection( adr, clientChallenge, "#GameUI_ServerRejectNewProtocol" );
 		}
 		return false;
 	}

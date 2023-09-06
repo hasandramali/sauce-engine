@@ -78,7 +78,6 @@ def build(bld):
 		'particlelitgeneric_dx9.cpp',
 		'particlelitgeneric_dx9_helper.cpp',
 		'particlesphere_dx9.cpp',
-		'pbr_dx9.cpp',
 		'portal.cpp',
 		'portalstaticoverlay.cpp',
 		'portal_refract.cpp',
@@ -126,8 +125,7 @@ def build(bld):
 		'worldvertextransition_dx8_helper.cpp',
 		'writez_dx9.cpp',
 		'writestencil_dx9.cpp',
-		'eyeball.cpp',
-		'../../public/tier0/memoverride.cpp'
+		'eyeball.cpp'
 #		$Folder	'stdshader_dbg Files', [$X360]
 #		{
 #			'debugdepth.cpp',

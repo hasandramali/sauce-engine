@@ -29,11 +29,7 @@
 #include <wchar.h>
 #endif
 #include <string.h>
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #include "commonmacros.h"
 #include "memalloc.h"
 

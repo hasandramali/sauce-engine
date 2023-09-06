@@ -35,16 +35,6 @@ public:
 	CBaseParticleEntity();
 	virtual ~CBaseParticleEntity();
 
-	virtual int ObjectCaps()
-	{
-		if( m_bShouldDeletedOnChangelevel )
-			return BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION;
-		else
-			return BaseClass::ObjectCaps();
-	}
-
-	void SetShouldDeletedOnChangelevel( bool bDel ) { m_bShouldDeletedOnChangelevel = bDel; }
-
 	// CBaseEntity overrides.
 public:
 #if !defined( CLIENT_DLL )
@@ -86,8 +76,6 @@ public:
 	void			SetLifetime(float lifetime);
 
 private:
-	bool			m_bShouldDeletedOnChangelevel;
-
 	CBaseParticleEntity( const CBaseParticleEntity & ); // not defined, not accessible
 };
 

@@ -60,7 +60,6 @@ ConVar r_staticpropinfo( "r_staticpropinfo", "0" );
 ConVar  r_drawmodeldecals( "r_drawmodeldecals", "1" );
 extern ConVar mat_fullbright;
 static bool g_MakingDevShots = false;
-extern int s_MapVersion;
 //-----------------------------------------------------------------------------
 // Index into the fade list
 //-----------------------------------------------------------------------------
@@ -1339,16 +1338,9 @@ void CStaticPropMgr::UnserializeModels( CUtlBuffer& buf )
 			case 5: UnserializeLump<StaticPropLumpV5_t>(&lump, buf); break;
 			case 6: UnserializeLump<StaticPropLumpV6_t>(&lump, buf); break;
 			case 7: // Falls down to version 10. We promoted TF to version 10 to deal with SFM. 
-			case 9: UnserializeLump<StaticPropLumpV9_t>(&lump, buf); break;
-			case 10:
-			{
-				if( s_MapVersion == 21 )
-					UnserializeLump<StaticPropLumpV10_21_t>(&lump, buf);
-				else
-					UnserializeLump<StaticPropLumpV10_t>(&lump, buf);
+			case 10: UnserializeLump<StaticPropLump_t>(&lump, buf); break;
+
 				break;
-			}
-			case 11: UnserializeLump<StaticPropLumpV11_t>(&lump, buf);
 			default:
 				Assert("Unexpected version while deserializing lumps.");
 		}

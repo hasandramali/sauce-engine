@@ -118,13 +118,7 @@ ConVar mat_viewportscale( "mat_viewportscale", "1.0", FCVAR_ARCHIVE, "Scale down
 ConVar mat_viewportupscale( "mat_viewportupscale", "1", FCVAR_ARCHIVE, "Scale the viewport back up" );
 ConVar cl_leveloverview( "cl_leveloverview", "0", FCVAR_CHEAT );
 
-#ifdef ANDROID
-#define MAPEXTENTS_DEFAULT "12288" // small optimization
-#else
-#define MAPEXTENTS_DEFAULT "16384"
-#endif
-
-static ConVar r_mapextents( "r_mapextents", MAPEXTENTS_DEFAULT, FCVAR_CHEAT,
+static ConVar r_mapextents( "r_mapextents", "16384", FCVAR_CHEAT, 
 						   "Set the max dimension for the map.  This determines the far clipping plane" );
 
 // UNDONE: Delete this or move to the material system?
@@ -648,17 +642,16 @@ void CViewRender::SetUpViews()
 	// Initialize view structure with default values
 	float farZ = GetZFar();
 
-	// Set up the mono/middle view.
-	CViewSetup &view = m_View;
+    // Set up the mono/middle view.
+    CViewSetup &view = m_View;
 
-	view.zFar			= farZ;
-	view.zFarViewmodel		= farZ;
-
-	// UNDONE: Make this farther out?
+	view.zFar				= farZ;
+	view.zFarViewmodel	    = farZ;
+	// UNDONE: Make this farther out? 
 	//  closest point of approach seems to be view center to top of crouched box
-	view.zNear		= GetZNear();
-	view.zNearViewmodel	= 1;
-	view.fov		= default_fov.GetFloat();
+	view.zNear			    = GetZNear();
+	view.zNearViewmodel	    = 1;
+	view.fov				= default_fov.GetFloat();
 
 	view.m_bOrtho			= false;
     view.m_bViewToProjectionOverride = false;
@@ -743,7 +736,7 @@ void CViewRender::SetUpViews()
 	float flFOVOffset = fDefaultFov - view.fov;
 
 	//Adjust the viewmodel's FOV to move with any FOV offsets on the viewer's end
-	view.fovViewmodel = fabs( g_pClientMode->GetViewModelFOV() - flFOVOffset );
+	view.fovViewmodel = g_pClientMode->GetViewModelFOV() - flFOVOffset;
 
 	if ( UseVR() )
 	{

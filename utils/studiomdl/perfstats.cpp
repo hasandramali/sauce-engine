@@ -53,7 +53,7 @@ Cache model's specified dynamic data
 vertexFileHeader_t *CStudioDataCache::CacheVertexData( studiohdr_t *pStudioHdr )
 {
 	// minimal implementation - return persisted data
-	return (vertexFileHeader_t*)pStudioHdr->VertexBase();
+	return (vertexFileHeader_t*)pStudioHdr->pVertexBase;
 }
 
 static void UpdateStudioRenderConfig( void )

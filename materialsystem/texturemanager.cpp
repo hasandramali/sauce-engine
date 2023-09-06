@@ -5,6 +5,7 @@
 //===========================================================================//
 
 #include <stdlib.h>
+#include <malloc.h>
 #include "materialsystem_global.h"
 #include "string.h"
 #include "shaderapi/ishaderapi.h"
@@ -786,8 +787,8 @@ protected:
 	friend class AsyncReader;
 	AsyncReader* m_pAsyncReader;
 
-    ThreadId_t m_nAsyncLoadThread;
-    ThreadId_t m_nAsyncReadThread;
+	uint m_nAsyncLoadThread;
+	uint m_nAsyncReadThread;
 
 	int m_iSuspendTextureStreaming;
 };
@@ -1130,7 +1131,7 @@ private:
 		m_completedJobs.PushItem( pJob );
 	}
 
-	static uintp LoaderMain( void* _this )
+	static unsigned LoaderMain( void* _this )
 	{
 		ThreadSetDebugName( "Loader" );
 
@@ -1431,7 +1432,7 @@ private:
 			mip_h = Max( 1, mip_h >> 1 );
 		}
 	}
-	static uintp ReaderMain( void* _this )
+	static unsigned ReaderMain( void* _this )
 	{
 		ThreadSetDebugName( "Helper" );
 
@@ -1819,7 +1820,7 @@ void CTextureManager::RestoreTexture( ITextureInternal* pTexture )
 //-----------------------------------------------------------------------------
 void CTextureManager::CleanupPossiblyUnreferencedTextures()
 {
-	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != (uintp)-1 )
+	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != 0xFFFFFFFF )
 	{
 		Assert( !"CTextureManager::CleanupPossiblyUnreferencedTextures should never be called here" );
 		// This is catastrophically bad, don't do this. Someone needs to fix this. See JohnS or McJohn
@@ -2368,7 +2369,7 @@ void CTextureManager::RemoveTexture( ITextureInternal *pTexture )
 
 	Assert( pTexture->GetReferenceCount() <= 0 );
 
-	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != (uintp)-1 )
+	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != 0xFFFFFFFF )
 	{
 		Assert( !"CTextureManager::RemoveTexture should never be called here");
 		// This is catastrophically bad, don't do this. Someone needs to fix this. 

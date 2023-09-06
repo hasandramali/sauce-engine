@@ -15,7 +15,7 @@
 
 class IVP_Template_Constraint_Fixed_Keyframed:public IVP_Template_Controller_Motion {
 public:
-    IVP_Template_Constraint_Fixed_Keyframed() = default;
+    IVP_Template_Constraint_Fixed_Keyframed();
 };
 
 class IVP_Constraint_Fixed_Keyframed: public IVP_Controller_Dependent {

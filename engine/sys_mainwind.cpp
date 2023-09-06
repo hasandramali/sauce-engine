@@ -25,7 +25,7 @@
 #elif defined(_X360)
 	// nothing to include for 360
 #elif defined(OSX)
-#elif defined(LINUX) || defined(PLATFORM_BSD)
+#elif defined(LINUX)
 	#include "tier0/dynfunction.h"
 #elif defined(_WIN32)
 	#include "tier0/dynfunction.h"
@@ -161,7 +161,7 @@ public:
 	void			SetMainWindow( SDL_Window* window );
 #else
 #ifdef WIN32
-	LRESULT			WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
+	int				WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 #endif
 	void			SetMainWindow( HWND window );
 #endif
@@ -514,7 +514,7 @@ void VCR_HandlePlaybackMessages(
 // FIXME: It would be nice to remove the need for this, which we can do
 // if we can make unicode work when running inside hammer.
 //-----------------------------------------------------------------------------
-static LRESULT WINAPI CallDefaultWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+static LONG WINAPI CallDefaultWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	if ( unicode )
 		return unicode->DefWindowProcW( hWnd, uMsg, wParam, lParam );
@@ -575,10 +575,10 @@ void XBX_HandleInvite( DWORD nUserId )
 //-----------------------------------------------------------------------------
 // Main windows procedure
 //-----------------------------------------------------------------------------
-LRESULT CGame::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+int CGame::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 {
-	LRESULT			lRet = 0;
+	LONG			lRet = 0;
 	HDC				hdc;
 	PAINTSTRUCT		ps;
 
@@ -833,7 +833,11 @@ LRESULT CGame::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     // return 0 if handled message, 1 if not
     return lRet;
 }
-#elif defined(OSX) || defined(LINUX) || defined(_WIN32) || defined(PLATFORM_BSD)
+#elif defined(OSX)
+
+#elif defined(LINUX)
+
+#elif defined(_WIN32)
 
 #else
 #error
@@ -844,7 +848,7 @@ LRESULT CGame::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 // Creates the game window 
 //-----------------------------------------------------------------------------
-static LRESULT WINAPI HLEngineWindowProc( HWND hWnd, UINT uMsg, WPARAM  wParam, LPARAM  lParam )
+static LONG WINAPI HLEngineWindowProc( HWND hWnd, UINT uMsg, WPARAM  wParam, LPARAM  lParam )
 {
 	return g_Game.WindowProc( hWnd, uMsg, wParam, lParam );
 }
@@ -948,7 +952,7 @@ bool CGame::CreateGameWindow( void )
 	memset( &wc, 0, sizeof( wc ) );
 
     wc.style         = CS_OWNDC | CS_DBLCLKS;
-    wc.lpfnWndProc   = static_cast<WNDPROC>(CallDefaultWindowProc);
+    wc.lpfnWndProc   = CallDefaultWindowProc;
     wc.hInstance     = m_hInstance;
     wc.lpszClassName = CLASSNAME;
 
@@ -1562,7 +1566,7 @@ void *CGame::GetMainWindowPlatformSpecificHandle( void )
 #ifdef OSX
 	id nsWindow = (id)pInfo.info.cocoa.window;
 	SEL selector = sel_registerName("windowRef");
-	id windowRef = ((id(*)(id, SEL))objc_msgSend)( nsWindow, selector );
+	id windowRef = objc_msgSend( nsWindow, selector );
 	return windowRef;
 #else
 	// Not used on Linux.

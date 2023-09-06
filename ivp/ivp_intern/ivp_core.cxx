@@ -490,13 +490,10 @@ void IVP_Core::damp_object(IVP_DOUBLE delta_time_, const IVP_U_Float_Point *rota
 }
 
 void IVP_Core::set_rotation_inertia( const IVP_U_Float_Point *r){
-	rot_inertia.set(
-		r->k[0] > P_FLOAT_MAX ? P_FLOAT_MAX : r->k[0],
-		r->k[1] > P_FLOAT_MAX ? P_FLOAT_MAX : r->k[1],
-		r->k[2] > P_FLOAT_MAX ? P_FLOAT_MAX : r->k[2]
-	);
-
-	this->calc_calc();
+    rot_inertia.set(IVP_Inline_Math::clamp(-P_FLOAT_MAX, r->k[0], P_FLOAT_MAX),
+	IVP_Inline_Math::clamp(-P_FLOAT_MAX, r->k[1], P_FLOAT_MAX),
+	IVP_Inline_Math::clamp(-P_FLOAT_MAX, r->k[2], P_FLOAT_MAX));
+    this->calc_calc();
 }
 
 
@@ -803,7 +800,7 @@ void IVP_Core::undo_synchronize_rot_z() {
     IVP_IF(1) {
         IVP_Debug_Manager *dm=environment->get_debug_manager();
 	if(dm->file_out_impacts) {
-	    fprintf(dm->out_deb_file,"undoing_synchro %x at %f\n",0x0000ffff&(IVP_INT32)(intp)this,environment->get_current_time().get_time());
+	    fprintf(dm->out_deb_file,"undoing_synchro %x at %f\n",0x0000ffff&(IVP_INT32)this,environment->get_current_time().get_time());
 	}
     }
     rot_speed.      set(&tmp_null.old_sync_info->old_sync_rot_speed);

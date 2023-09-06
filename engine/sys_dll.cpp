@@ -12,10 +12,6 @@
 #elif defined(OSX)
 #include <Carbon/Carbon.h>
 #include <sys/sysctl.h>
-#elif defined(PLATFORM_BSD)
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#define HW_MEMSIZE HW_PHYSMEM
 #endif
 #if defined(LINUX)
 #include <unistd.h>
@@ -460,14 +456,21 @@ void Sys_Error_Internal( bool bMinidump, const char *error, va_list argsList )
 
 			// We always get here because the above filter evaluates to EXCEPTION_EXECUTE_HANDLER
 		}
-#elif defined(POSIX)
+#elif defined( OSX )
 		// Doing this doesn't quite work the way we want because there is no "crashing" thread
 		// and we see "No thread was identified as the cause of the crash; No signature could be created because we do not know which thread crashed" on the back end
 		//SteamAPI_WriteMiniDump( 0, NULL, build_number() );
 		printf("\n ##### Sys_Error: %s", text );
 		fflush(stdout );
 
-		raise(SIGTRAP);
+		int *p = 0;
+		*p = 0xdeadbeef;
+#elif defined( LINUX )
+		// Doing this doesn't quite work the way we want because there is no "crashing" thread
+		// and we see "No thread was identified as the cause of the crash; No signature could be created because we do not know which thread crashed" on the back end
+		//SteamAPI_WriteMiniDump( 0, NULL, build_number() );
+		int *p = 0;
+		*p = 0xdeadbeef;
 #else
 #warning "need minidump impl on sys_error"
 #endif
@@ -668,7 +671,7 @@ void Sys_InitMemory( void )
 #elif defined(POSIX)
 	uint64_t memsize = ONE_HUNDRED_TWENTY_EIGHT_MB;
 
-#if defined(OSX) || defined(PLATFORM_BSD)
+#if defined(OSX)
 	int mib[2] = { CTL_HW, HW_MEMSIZE };
 	u_int namelen = sizeof(mib) / sizeof(mib[0]);
 	size_t len = sizeof(memsize);
@@ -794,7 +797,7 @@ void Sys_ShutdownAuthentication( void )
 //-----------------------------------------------------------------------------
 // Debug library spew output
 //-----------------------------------------------------------------------------
-CTHREADLOCALINT g_bInSpew;
+CThreadLocalInt<> g_bInSpew;
 
 #include "tier1/fmtstr.h"
 
@@ -1578,7 +1581,7 @@ CON_COMMAND( star_memory, "Dump memory stats" )
 {
 	// get a current stat of available memory
 	// 32 MB is reserved and fixed by OS, so not reporting to allow memory loggers sync
-#if defined( PLATFORM_GLIBC )
+#ifdef LINUX
 	struct mallinfo memstats = mallinfo( );
 	Msg( "sbrk size: %.2f MB, Used: %.2f MB, #mallocs = %d\n",
 		 memstats.arena / ( 1024.0 * 1024.0), memstats.uordblks / ( 1024.0 * 1024.0 ), memstats.hblks );
@@ -1586,14 +1589,12 @@ CON_COMMAND( star_memory, "Dump memory stats" )
 	struct mstats memstats = mstats( );
 	Msg( "Available %.2f MB, Used: %.2f MB, #mallocs = %lu\n",
 		 memstats.bytes_free / ( 1024.0 * 1024.0), memstats.bytes_used / ( 1024.0 * 1024.0 ), memstats.chunks_used );
-#elif defined( _WIN32 ) // Win32
+#else
 	MEMORYSTATUS stat;
 	GlobalMemoryStatus( &stat );
 	Msg( "Available: %.2f MB, Used: %.2f MB, Free: %.2f MB\n", 
 		stat.dwTotalPhys/( 1024.0f*1024.0f ) - 32.0f,
 		( stat.dwTotalPhys - stat.dwAvailPhys )/( 1024.0f*1024.0f ) - 32.0f, 
 		stat.dwAvailPhys/( 1024.0f*1024.0f ) );
-#else
-#warning TODO: Implement memory stats
 #endif
 }

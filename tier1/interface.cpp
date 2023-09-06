@@ -182,7 +182,7 @@ static HMODULE InternalLoadLibrary( const char *pName, Sys_Flags flags )
 		return LoadLibraryEx( pName, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
 #endif
 }
-uintp ThreadedLoadLibraryFunc( void *pParam )
+unsigned ThreadedLoadLibraryFunc( void *pParam )
 {
 	ThreadedLoadLibaryContext_t *pContext = (ThreadedLoadLibaryContext_t*)pParam;
 	pContext->m_hLibrary = InternalLoadLibrary( pContext->m_pLibraryName, SYS_NOFLAGS );
@@ -229,7 +229,7 @@ HMODULE Sys_LoadLibrary( const char *pLibraryName, Sys_Flags flags )
 	context.m_pLibraryName = str;
 	context.m_hLibrary = 0;
 
-	ThreadHandle_t h = CreateSimpleThread( (ThreadFunc_t)ThreadedLoadLibraryFunc, &context );
+	ThreadHandle_t h = CreateSimpleThread( ThreadedLoadLibraryFunc, &context );
 
 #ifdef _X360
 	ThreadSetAffinity( h, XBOX_PROCESSOR_3 );
@@ -238,7 +238,7 @@ HMODULE Sys_LoadLibrary( const char *pLibraryName, Sys_Flags flags )
 	unsigned int nTimeout = 0;
 	while( ThreadWaitForObject( h, true, nTimeout ) == TW_TIMEOUT )
 	{
-		nTimeout = threadFunc(0);
+		nTimeout = threadFunc();
 	}
 
 	ReleaseThreadHandle( h );
@@ -258,7 +258,7 @@ HMODULE Sys_LoadLibrary( const char *pLibraryName, Sys_Flags flags )
 		const char *pError = dlerror();
 		if ( pError && ( strstr( pError, "No such file" ) == 0 ) && ( strstr( pError, "image not found" ) == 0 ) )
 		{
-			Msg( "failed to dlopen %s error=%s\n", str, pError );
+			Msg( " failed to dlopen %s error=%s\n", str, pError );
 		}
 	}
 	
@@ -266,48 +266,6 @@ HMODULE Sys_LoadLibrary( const char *pLibraryName, Sys_Flags flags )
 #endif
 }
 static bool s_bRunningWithDebugModules = false;
-
-#ifdef POSIX
-
-#ifdef ANDROID
-#define DEFAULT_LIB_PATH ""
-#else
-#define DEFAULT_LIB_PATH "bin/"
-#endif
-
-bool foundLibraryWithPrefix( char *pModuleAbsolutePath, size_t AbsolutePathSize, const char *pPath, const char *pModuleName )
-{
-	char str[1024];
-	Q_strncpy( str, pModuleName, sizeof(str) );
-	V_SetExtension( str, DLL_EXT_STRING, sizeof(str) );
-	bool bFound = false;
-
-	struct stat statBuf;
-	Q_snprintf(pModuleAbsolutePath, AbsolutePathSize, "%s/" DEFAULT_LIB_PATH "lib%s", pPath, str);
-	bFound |= stat(pModuleAbsolutePath, &statBuf) == 0;
-
-	if( !bFound )
-	{
-		Q_snprintf(pModuleAbsolutePath, AbsolutePathSize, "%s/" DEFAULT_LIB_PATH "%s", pPath, str);
-		bFound |= stat(pModuleAbsolutePath, &statBuf) == 0;
-	}
-
-	if( !bFound )
-	{
-		Q_snprintf(pModuleAbsolutePath, AbsolutePathSize, "%s/lib%s", pPath, str);
-		bFound |= stat(pModuleAbsolutePath, &statBuf) == 0;
-	}
-
-	if( !bFound )
-	{
-		Q_snprintf(pModuleAbsolutePath, AbsolutePathSize, "%s/%s", pPath, str);
-		bFound |= stat(pModuleAbsolutePath, &statBuf) == 0;
-	}
-
-	return bFound;
-}
-
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Loads a DLL/component from disk and returns a handle to it
@@ -320,9 +278,7 @@ CSysModule *Sys_LoadModule( const char *pModuleName, Sys_Flags flags /* = SYS_NO
 	// file in the depot (MFP) or a filesystem GetLocalCopy() call must be made
 	// prior to the call to this routine.
 	char szCwd[1024];
-#ifdef POSIX
-	char szModuleName[1024] = { 0 };
-#endif
+	char szModuleName[1024];
 	HMODULE hDLL = NULL;
 
 	if ( !Q_IsAbsolutePath( pModuleName ) )
@@ -343,61 +299,46 @@ CSysModule *Sys_LoadModule( const char *pModuleName, Sys_Flags flags /* = SYS_NO
 			szCwd[strlen(szCwd) - 1] = 0;
 		}
 
-		char szAbsoluteModuleName[2048];
-#ifdef ANDROID
-		char *libPath = getenv("APP_LIB_PATH");
-		char *modLibPath = getenv("APP_MOD_LIB");
-		bool bFound;
+		char szAbsoluteModuleName[1024];
+		size_t cCwd = strlen( szCwd );
 
+		bool bUseLibPrefix = false;
+
+#ifdef ANDROID
+		struct stat statBuf;
+		char *dataPath = getenv("APP_DATA_PATH");
+
+		char *modLibPath = getenv("APP_MOD_LIB");
 		if( modLibPath && *modLibPath ) // first load library from mod launcher
 		{
-			bFound = foundLibraryWithPrefix( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), modLibPath, pModuleName );
-
-			if( bFound )
-				hDLL = Sys_LoadLibrary( szAbsoluteModuleName, flags );
-
-			if( !hDLL && bFound )
-				Error("Can't find mod library %s\n", szAbsoluteModuleName);
+			Q_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/lib%s", modLibPath, pModuleName);
+			if( stat(szAbsoluteModuleName, &statBuf) != 0 )
+				Q_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", modLibPath, pModuleName);
+			
+			hDLL = Sys_LoadLibrary(szAbsoluteModuleName, flags);
 		}
 
-		if( !foundLibraryWithPrefix( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), libPath, pModuleName ) )
-		{
-			Warning("Can't find module - %s\n", pModuleName);
-			return reinterpret_cast<CSysModule *>(hDLL);
-		}
-
-#elif defined( POSIX )
-		if( !foundLibraryWithPrefix(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), szCwd, pModuleName) )
-		{
-			Warning("Can't find module - %s\n", pModuleName);
-			return reinterpret_cast<CSysModule *>(hDLL);
-		}
+		Q_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/lib/lib%s", dataPath ,pModuleName);
+		if( stat(szAbsoluteModuleName, &statBuf) != 0 )
+			Q_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/lib/%s", dataPath ,pModuleName);
 #else
-		Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/%s", szCwd, pModuleName );
+#ifdef POSIX
+		struct stat statBuf;
+		Q_snprintf(szModuleName, sizeof(szModuleName), "bin/lib%s", pModuleName);
+		bUseLibPrefix |= stat(szModuleName, &statBuf) == 0;
 #endif
+		if( bUseLibPrefix )
+			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/lib%s", szCwd, pModuleName );
+		else
+			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/%s", szCwd, pModuleName );
+#endif // ANDROID
 		Msg("LoadLibrary: pModule: %s, path: %s\n", pModuleName, szAbsoluteModuleName);
 
 		if( !hDLL )
 			hDLL = Sys_LoadLibrary( szAbsoluteModuleName, flags );
 	}
 	else
-	{
-#ifdef POSIX
-		Q_strncpy( szModuleName, pModuleName, sizeof(szModuleName) );
-		V_SetExtension( szModuleName, DLL_EXT_STRING, sizeof(szModuleName) );
-
-		struct stat statBuf;
-		bool bFound = stat(szModuleName, &statBuf) == 0;
-
-		if( !bFound )
-		{
-			Warning("Can't find module - %s\n", pModuleName);
-			return reinterpret_cast<CSysModule *>(hDLL);
-		}
-
-		Msg("LoadLibrary: path: %s\n", szModuleName);
-#endif
-	}
+		Msg("LoadLibrary: path: %s\n", pModuleName);
 
 
 	if ( !hDLL )

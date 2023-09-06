@@ -258,15 +258,7 @@ void CHudCrosshair::Paint( void )
 		pWeapon->GetWeaponCrosshairScale( flWeaponScale );
 	}
 
-	int iScreenDiv = 1600;
-	if ( IsSteamDeck() )
-		iScreenDiv = 1440;
-
-	float flPlayerScale;
-	if ( !m_pCrosshair->bRenderUsingFont )
-		flPlayerScale = (ScreenHeight() / iScreenDiv) + 1;
-	else
-		flPlayerScale = 1.0f;
+	float flPlayerScale = 1.0f;
 #ifdef TF_CLIENT_DLL
 	Color clr( cl_crosshair_red.GetInt(), cl_crosshair_green.GetInt(), cl_crosshair_blue.GetInt(), 255 );
 	flPlayerScale = cl_crosshair_scale.GetFloat() / 32.0f;  // the player can change the scale in the options/multiplayer tab

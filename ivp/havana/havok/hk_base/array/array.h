@@ -8,7 +8,7 @@
 class hk_Array_Base
 {
 	public:
-			inline hk_Array_Base() = default;
+			inline hk_Array_Base();
 	protected:
 			inline hk_Array_Base(char *elems, int n_elems);
 

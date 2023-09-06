@@ -10,6 +10,7 @@
 #include "bitmap/imageformat.h"
 #include "basetypes.h"
 #include "tier0/dbg.h"
+#include <malloc.h>
 #include <memory.h>
 #include "mathlib/mathlib.h"
 #include "mathlib/vector.h"
@@ -828,7 +829,7 @@ bool ConvertToATIxN(  const uint8 *src, ImageFormat srcImageFormat,
 					  uint8 *dst, ImageFormat dstImageFormat,
 					  int width, int height, int srcStride, int dstStride )
 {
-#if 0
+#if !defined( _X360 ) && !defined( POSIX )
 
 	// from rgb(a) to ATIxN
 	if( srcStride != 0 || dstStride != 0 )
@@ -877,7 +878,7 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
  						  uint8 *dst, ImageFormat dstImageFormat, 
 					      int width, int height, int srcStride, int dstStride )
 {
-#if 0
+#if !defined( _X360 ) && !defined( POSIX )
 	// from rgb(a) to dxtN
 	if( srcStride != 0 || dstStride != 0 )
 		return false;

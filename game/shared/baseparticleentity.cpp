@@ -35,7 +35,6 @@ CBaseParticleEntity::CBaseParticleEntity( void )
 	m_bSimulate = true;
 	m_nToolParticleEffectId = TOOLPARTICLESYSTEMID_INVALID;
 #endif
-	m_bShouldDeletedOnChangelevel = false;
 }
 
 CBaseParticleEntity::~CBaseParticleEntity( void )

@@ -28,7 +28,7 @@
 	public:															\
 		DECLARE_PREDICTABLE();										\
 		DECLARE_CLIENTCLASS();										\
-		C_##className() = default;											\
+		C_##className() {};											\
 	private:														\
 		C_##className( const C_##className & );						\
 	};																\

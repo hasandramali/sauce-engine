@@ -103,6 +103,15 @@ bool CP4File::SetFileType(const CUtlString& desiredFileType)
 //
 //////////////////////////////////////////////////////////////////////////
 
+
+CP4Factory::CP4Factory()
+{
+}
+
+CP4Factory::~CP4Factory()
+{
+}
+
 bool CP4Factory::SetDummyMode( bool bDummyMode )
 {
 	bool bOld = m_bDummyMode;

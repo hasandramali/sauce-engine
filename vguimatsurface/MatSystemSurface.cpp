@@ -48,11 +48,7 @@ ILauncherMgr *g_pLauncherMgr = NULL;
 #include "mathlib/vmatrix.h"
 #include <tier0/vprof.h>
 #include "materialsystem/itexture.h"
-#ifdef OSX
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #include "../vgui2/src/VPanel.h"
 #include <vgui/IInputInternal.h>
 #if defined( _X360 )
@@ -146,7 +142,7 @@ CMatSystemSurface g_MatSystemSurface;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CMatSystemSurface, ISurface, 
 						VGUI_SURFACE_INTERFACE_VERSION, g_MatSystemSurface );
 
-#if defined(LINUX) || defined(OSX) || defined(PLATFORM_BSD)
+#ifdef LINUX
 CUtlDict< CMatSystemSurface::font_entry, unsigned short > CMatSystemSurface::m_FontData;
 #endif
 
@@ -407,7 +403,7 @@ InitReturnVal_t CMatSystemSurface::Init( void )
 		FontManager().SetLanguage( "english" );
 	}
 
-#if defined(LINUX) || defined(OSX) || defined(PLATFORM_BSD)
+#ifdef LINUX
 	FontManager().SetFontDataHelper( &CMatSystemSurface::FontDataHelper );
 #endif
 
@@ -1907,7 +1903,16 @@ bool CMatSystemSurface::AddCustomFontFile( const char *fontName, const char *fon
 	}
 	Assert( success );
 	return success;
-#elif defined(LINUX) || defined(OSX) || defined(PLATFORM_BSD)
+#elif OSX
+	
+	FSRef ref;
+	OSStatus err = FSPathMakeRef( (const UInt8*)fullPath, &ref, NULL );
+	if ( err == noErr )
+		err = ATSFontActivateFromFileReference( &ref, kATSFontContextLocal, kATSFontFormatUnspecified, NULL, kATSOptionFlagsDefault, NULL );
+	
+	return err == noErr;
+
+#elif LINUX
 
 	int size;
 	if ( CMatSystemSurface::FontDataHelper( fontName, size, fontFileName ) )
@@ -1921,7 +1926,7 @@ bool CMatSystemSurface::AddCustomFontFile( const char *fontName, const char *fon
 #endif
 }
 
-#if defined(LINUX) || defined(OSX) || defined(PLATFORM_BSD)
+#ifdef LINUX
 
 static void RemoveSpaces( CUtlString &str )
 {

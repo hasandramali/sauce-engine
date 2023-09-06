@@ -39,7 +39,7 @@ void FastCopy( byte *pDest, const byte *pSrc, size_t nBytes )
 		int nBytesFull = nBytes - ( nBytes % BYTES_PER_FULL );
 		for ( byte *pLimit = pDest + nBytesFull; pDest < pLimit; pDest += BYTES_PER_FULL, pSrc += BYTES_PER_FULL )
 		{
-			#ifdef __i386__
+			// memcpy( pDest, pSrc, BYTES_PER_FULL);
 			__asm
 			{
 				mov esi, pSrc
@@ -63,9 +63,6 @@ void FastCopy( byte *pDest, const byte *pSrc, size_t nBytes )
 				movntps [edi + 96], xmm6
 				movntps [edi + 112], xmm7
 			}
-			#else
-			memcpy( pDest, pSrc, BYTES_PER_FULL);
-			#endif
 		}
 		nBytes -= nBytesFull;
 	}
@@ -341,7 +338,7 @@ public:
 			Assert( m_VertexSize );
 			Assert( !m_pVertexData );
 			m_pVertexData = (byte *)m_pOwner->AllocVertices( numVerts, m_VertexSize );
-			Assert( (uintp)m_pVertexData % 16 == 0 );
+			Assert( (unsigned)m_pVertexData % 16 == 0 );
 
 			// Compute the vertex index..
 			desc.m_nFirstVertex = 0;
@@ -455,11 +452,14 @@ public:
 			}
 			else
 			{
-				static ALIGN16 uint16 tempIndices[256];
+				ALIGN16 uint16 tempIndices[16];
 
-				// original method
 				int i = 0;
-
+				if ( (size_t)desc.m_pIndices % 4 == 2 )
+				{
+					desc.m_pIndices[i] = pIndexData[i] + desc.m_nFirstVertex;
+					i++;
+				}
 				while ( i < nIndices )
 				{
 					int nToCopy = min( (int)ARRAYSIZE(tempIndices), nIndices - i );

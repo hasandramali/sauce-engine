@@ -683,7 +683,7 @@ private:
 	
 	struct corepair_t
 	{
-		corepair_t() = default;
+		corepair_t() {}
 		corepair_t( IVP_Friction_Core_Pair *pair )
 		{
 			int index = ( pair->objs[0] < pair->objs[1] ) ? 0 : 1;
@@ -2041,7 +2041,7 @@ public:
 		if ( !pHash )
 			return m_objectList.InvalidIndex();
 
-        uintp hash = (uintp)pHash;
+		unsigned int hash = (unsigned int)pHash;
 		// mask off the extra bit we added to avoid zeros
 		hash &= 0xFFFF;
 		return (unsigned short)hash;
@@ -2051,10 +2051,10 @@ public:
 	void *ListIndexToHash( unsigned short listIndex )
 	{
 		unsigned int hash = (unsigned int)listIndex;
-
+		
 		// set the high bit, so zero means "not there"
 		hash |= 0x80000000;
-		return (void *)(intp)hash;
+		return (void *)hash;
 	}
 
 	// Lookup this object and get a multilist entry

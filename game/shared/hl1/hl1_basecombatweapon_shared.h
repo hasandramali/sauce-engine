@@ -35,7 +35,6 @@ public:
 
 	void FallInit( void );						// prepare to fall to the ground
 	virtual void FallThink( void );						// make the weapon fall to the ground after spawning
-	bool CreateVPhysics( void );
 
 	void EjectShell( CBaseEntity *pPlayer, int iType );
 

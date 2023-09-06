@@ -10,7 +10,7 @@
 #include <windows.h>
 #include "shlwapi.h" // registry stuff
 #include <direct.h>
-#elif defined(POSIX)
+#elif defined ( LINUX ) || defined( OSX )
 	#define O_EXLOCK 0
 	#include <sys/types.h>
 	#include <sys/stat.h>
@@ -67,8 +67,7 @@
 #endif
 
 #if defined( USE_SDL )
-#include <SDL.h>
-#include <SDL_version.h>
+#include "SDL.h"
 
 #if !defined( _WIN32 )
 #define MB_OK 			0x00000001
@@ -104,7 +103,6 @@ static IEngineAPI *g_pEngineAPI;
 static IHammer *g_pHammer;
 
 bool g_bTextMode = false;
-bool g_MultiRun = false;
 
 static char g_szBasedir[MAX_PATH];
 static char g_szGamedir[MAX_PATH];
@@ -206,7 +204,7 @@ class CVCRHelpers : public IVCRHelpers
 public:
 	virtual void ErrorMessage( const char *pMsg )
 	{
-#if defined( WIN32 ) || defined( LINUX ) || defined(PLATFORM_BSD)
+#if defined( WIN32 ) || defined( LINUX )
 		NOVCR( ::MessageBox( NULL, pMsg, "VCR Error", MB_OK ) );
 #endif
 	}
@@ -767,11 +765,6 @@ bool CSourceAppSystemGroup::Create()
 
 bool CSourceAppSystemGroup::PreInit()
 {
-	if ( !CommandLine()->FindParm( "-nolog" ) )
-		DebugLogger()->Init("engine.log");
-	else
-		DebugLogger()->Disable();
-
 	CreateInterfaceFn factory = GetFactory();
 	ConnectTier1Libraries( &factory, 1 );
 	ConVar_Register( );
@@ -923,9 +916,6 @@ char g_lockFilename[MAX_PATH];
 #endif
 bool GrabSourceMutex()
 {
-	if( g_MultiRun )
-		return true;
-
 #ifdef WIN32
 	if ( IsPC() )
 	{
@@ -954,7 +944,7 @@ bool GrabSourceMutex()
 
 #ifdef ANDROID
 	return true;
-#elif defined (LINUX) || defined(PLATFORM_BSD)
+#elif defined (LINUX)
 	/*
 	 * Linux
  	 */
@@ -1020,9 +1010,6 @@ bool GrabSourceMutex()
 
 void ReleaseSourceMutex()
 {
-	if( g_MultiRun )
-		return;
-
 #ifdef WIN32
 	if ( IsPC() && g_hMutex )
 	{
@@ -1200,12 +1187,12 @@ extern void InitGL4ES();
 // Output : int APIENTRY
 //-----------------------------------------------------------------------------
 #ifdef WIN32
-DLL_EXPORT int LauncherMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+extern "C" __declspec(DLL_EXPORT) int LauncherMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 #else
 DLL_EXPORT int LauncherMain( int argc, char **argv )
 #endif
 {
-#if (defined(LINUX) || defined(PLATFORM_BSD)) && !defined ANDROID
+#if defined LINUX && !defined ANDROID
 	// Temporary fix to stop us from crashing in printf/sscanf functions that don't expect
 	//  localization to mess with your "." and "," float seperators. Mac OSX also sets LANG
 	//  to en_US.UTF-8 before starting up (in info.plist I believe).
@@ -1226,13 +1213,7 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 #endif // LINUX
 
-#ifdef USE_SDL
-	SDL_version ver;
-	SDL_GetVersion( &ver );
-	Msg("SDL version: %d.%d.%d rev: %s\n", (int)ver.major, (int)ver.minor, (int)ver.patch, SDL_GetRevision());
-#endif
-
-#if (defined LINUX || defined PLATFORM_BSD) && defined USE_SDL && defined TOGLES && !defined ANDROID
+#if defined LINUX && defined USE_SDL && defined TOGLES && !defined ANDROID
 	SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
 #endif
 
@@ -1253,6 +1234,12 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 	// Hook the debug output stuff.
 	SpewOutputFunc( LauncherDefaultSpewFunc );
+
+	if ( 0 && IsWin98OrOlder() )
+	{
+		Error( "This build does not currently run under Windows 98/Me." );
+		return -1;
+	}
 
 	// Quickly check the hardware key, essentially a warning shot.  
 	if ( !Plat_VerifyHardwareKeyPrompt() )
@@ -1284,10 +1271,6 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 	
 	// Figure out the directory the executable is running from
 	UTIL_ComputeBaseDir();
-
-	// Allow the user to explicitly say they want to be able to run multiple instances of the source mutex.
-	// Useful for side-by-side comparisons of different renderers.
-	g_MultiRun = CommandLine()->CheckParm( "-multirun" ) != NULL;
 
 #if defined( _X360 )
 	bool bSpewDllInfo = CommandLine()->CheckParm( "-dllinfo" );
@@ -1400,6 +1383,10 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 		// Can only run one windowed source app at a time
 		if ( !GrabSourceMutex() )
 		{
+			// Allow the user to explicitly say they want to be able to run multiple instances of the source mutex.
+			// Useful for side-by-side comparisons of different renderers.
+			bool multiRun = CommandLine()->CheckParm( "-multirun" ) != NULL;
+
 			// We're going to hijack the existing session and load a new savegame into it. This will mainly occur when users click on links in Bugzilla that will automatically copy saves and load them
 			// directly from the web browser. The -hijack command prevents the launcher from objecting that there is already an instance of the game.
 			if (CommandLine()->CheckParm( "-hijack" ))
@@ -1437,12 +1424,12 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 			}
 			else
 			{
-				if (!g_MultiRun) {
+				if (!multiRun) {
 					::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", MB_ICONINFORMATION | MB_OK);
 				}
 			}
 
-			if (!g_MultiRun) {
+			if (!multiRun) {
 				return retval;
 			}
 		}
@@ -1450,7 +1437,7 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 #elif defined( POSIX )
 	else
 	{
-		if ( !GrabSourceMutex() && !g_MultiRun )
+		if ( !GrabSourceMutex() )
 		{
 			::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", 0 );
 			return -1;
@@ -1560,7 +1547,7 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 		RegCloseKey(hKey);
 	}
 
-#elif defined( OSX ) || defined( LINUX ) || defined(PLATFORM_BSD)
+#elif defined( OSX ) || defined( LINUX )
 	struct stat st;
 	if ( stat( RELAUNCH_FILE, &st ) == 0 ) 
 	{
@@ -1577,7 +1564,7 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 				}
 				szCmd[nChars] = 0;
 				char szOpenLine[ MAX_PATH ];
-				#if defined( LINUX ) || defined(PLATFORM_BSD)
+				#if defined( LINUX )
 					Q_snprintf( szOpenLine, sizeof(szOpenLine), "xdg-open \"%s\"", szCmd );
 				#else
 					Q_snprintf( szOpenLine, sizeof(szOpenLine), "open \"%s\"", szCmd );

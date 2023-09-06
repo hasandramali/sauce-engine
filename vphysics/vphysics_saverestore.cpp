@@ -57,7 +57,7 @@ bool CPhysicsEnvironment::Save( const physsaveparams_t &params )
 	
 	if ( type >= 0 && type < PIID_NUM_TYPES )
 	{
-		params.pSave->WriteData( (char *)&params.pObject, sizeof(void*) );
+		params.pSave->WriteInt( (int *)&params.pObject );
 		return (*saveFuncs[type])( params, params.pObject );
 	}
 	return false;
@@ -105,7 +105,7 @@ bool CPhysicsEnvironment::Restore( const physrestoreparams_t &params )
 	if ( type >= 0 && type < PIID_NUM_TYPES )
 	{
 		void *pOldObject;
-		params.pRestore->ReadData( (char *)&pOldObject, sizeof(void*), 0 );
+		params.pRestore->ReadInt( (int *)&pOldObject );
 		if ( (*restoreFuncs[type])( params, params.ppObject ) )
 		{
 			AddPtrAssociation( pOldObject, *params.ppObject );
@@ -131,12 +131,12 @@ void CPhysicsEnvironment::PostRestore()
 
 void CVPhysPtrSaveRestoreOps::Save( const SaveRestoreFieldInfo_t &fieldInfo, ISave *pSave )
 {
-	char *pField = (char *)fieldInfo.pField;
+	int *pField = (int *)fieldInfo.pField;
 	int nObjects = fieldInfo.pTypeDesc->fieldSize;
 	for ( int i = 0; i < nObjects; i++ )
 	{
-		pSave->WriteData( (char*)pField, sizeof(void*) );
-		pField += sizeof(void*);
+		pSave->WriteInt( pField );
+		++pField;
 	}
 }
 
@@ -153,10 +153,9 @@ void CVPhysPtrSaveRestoreOps::Restore( const SaveRestoreFieldInfo_t &fieldInfo, 
 {
 	void **ppField = (void **)fieldInfo.pField;
 	int nObjects = fieldInfo.pTypeDesc->fieldSize;
-
 	for ( int i = 0; i < nObjects; i++ )
 	{
-		pRestore->ReadData( (char *)ppField, sizeof(void*), 0 );
+		pRestore->ReadInt( (int *)ppField );
 
 		int iNewVal = s_VPhysPtrMap.Find( *ppField );
 		if ( iNewVal != s_VPhysPtrMap.InvalidIndex() )
@@ -189,11 +188,10 @@ void CVPhysPtrUtlVectorSaveRestoreOps::Save( const SaveRestoreFieldInfo_t &field
 
 	VPhysPtrVector *pUtlVector = (VPhysPtrVector*)fieldInfo.pField;
 	int nObjects = pUtlVector->Count();
-
 	pSave->WriteInt( &nObjects );
 	for ( int i = 0; i < nObjects; i++ )
 	{
-		pSave->WriteData( (char*)&pUtlVector->Element(i), sizeof(void*) );
+		pSave->WriteInt( &pUtlVector->Element(i) );
 	}
 }
 
@@ -209,7 +207,7 @@ void CVPhysPtrUtlVectorSaveRestoreOps::Restore( const SaveRestoreFieldInfo_t &fi
 	for ( int i = 0; i < nObjects; i++ )
 	{
 		void **ppElem = (void**)(&pUtlVector->Element(i));
-		pRestore->ReadData( (char *)ppElem, sizeof(void*), 0 );
+		pRestore->ReadInt( (int*)ppElem );
 
 		int iNewVal = s_VPhysPtrMap.Find( *ppElem );
 		if ( iNewVal != s_VPhysPtrMap.InvalidIndex() )

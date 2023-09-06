@@ -260,7 +260,7 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 		Assert( track->Count() < 1000 ); // insanity check
 
 		// remove tail records that are too old
-		intp tailIndex = track->Tail();
+		int tailIndex = track->Tail();
 		while ( track->IsValidIndex( tailIndex ) )
 		{
 			LagRecord &tail = track->Element( tailIndex );
@@ -428,7 +428,7 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 	if ( track->Count() <= 0 )
 		return;
 
-    intp curr = track->Head();
+	int curr = track->Head();
 
 	LagRecord *prevRecord = NULL;
 	LagRecord *record = NULL;

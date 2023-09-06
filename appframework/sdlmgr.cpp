@@ -19,9 +19,7 @@
 
 #include "tier1/utllinkedlist.h"
 #include "tier1/convar.h"
-#ifdef TOGLES
 #include <EGL/egl.h>
-#endif
 
 // NOTE: This has to be the last file included! (turned off below, since this is included like a header)
 #include "tier0/memdbgon.h"
@@ -36,8 +34,8 @@
 #define GLMPRINTF(args)
 #endif
 
-#if defined( OSX ) || defined( ANDROID )
-ConVar rawinput_set_one_time( "rawinput_set_one_time", "0", FCVAR_ARCHIVE|FCVAR_HIDDEN, "");
+#ifdef OSX
+ConVar osx_rawinput_set_one_time( "osx_rawinput_set_one_time", "0", FCVAR_ARCHIVE|FCVAR_HIDDEN, "");
 #endif
 
 ConVar gl_blit_halfx( "gl_blit_halfx", "0" );
@@ -206,6 +204,8 @@ void *VoidFnPtrLookup_GlMgr(const char *fn, bool &okay, const bool bRequired, vo
 	{
 		retval = _glGetProcAddress(fn);
 
+		Msg("_glGetProcAddress(%s) = %x\n", fn, retval);
+
 		if( !retval && l_gles )
 			retval = dlsym( l_gles, fn );
 	}
@@ -270,7 +270,7 @@ public:
 
 	// Get the next N events. The function returns the number of events that were filled into your array.
 	virtual int GetEvents( CCocoaEvent *pEvents, int nMaxEventsToReturn, bool debugEvents = false );
-#if defined(LINUX) || defined(PLATFORM_BSD)
+#ifdef LINUX
 	virtual int PeekAndRemoveKeyboardEvents( bool *pbEsc, bool *pbReturn, bool *pbSpace, bool debugEvent = false );
 #endif
 
@@ -1004,7 +1004,7 @@ int CSDLMgr::GetEvents( CCocoaEvent *pEvents, int nMaxEventsToReturn, bool debug
 	return nToWrite;
 }
 
-#if defined(LINUX) || defined(PLATFORM_BSD)
+#ifdef LINUX
 
 int CSDLMgr::PeekAndRemoveKeyboardEvents( bool *pbEsc, bool *pbReturn, bool *pbSpace, bool debugEvent )
 {
@@ -1139,15 +1139,17 @@ void CSDLMgr::OnFrameRendered()
 
 		ConVarRef rawinput( "m_rawinput" );
 
-#if defined( OSX ) || defined( ANDROID )
-		// We default raw input to on on Mac/Android and set it one time for all users since
+		
+#ifdef OSX
+		// We default raw input to on on Mac and set it one time for all users since
 		// it didn't used to be the default.
-		if ( !rawinput_set_one_time.GetBool() )
+		if ( !osx_rawinput_set_one_time.GetBool() )
 		{
-			rawinput_set_one_time.SetValue( 1 );
+			osx_rawinput_set_one_time.SetValue( 1 );
 			rawinput.SetValue( 1 );
 		}
 #endif
+
 		m_bRawInput = !m_bCursorVisible && rawinput.IsValid() && rawinput.GetBool();
 
 		SDL_bool bWindowGrab = !m_bCursorVisible ? SDL_TRUE : SDL_FALSE;
@@ -2224,7 +2226,7 @@ GLMDisplayDB *CSDLMgr::GetDisplayDB( void )
 }
 
 #ifndef OSX
-#include "glmdisplaydb_linuxwin.inl"
+# include "glmdisplaydb_linuxwin.inl"
 #endif
 
 

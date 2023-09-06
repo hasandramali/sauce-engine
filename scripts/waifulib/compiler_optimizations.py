@@ -35,9 +35,8 @@ VALID_BUILD_TYPES = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sa
 LINKFLAGS = {
 	'common': {
 		'msvc':  ['/DEBUG'], # always create PDB, doesn't affect result binaries
-		'clang': ['-fvisibility=hidden'],
 		'gcc':   ['-Wl,--no-undefined'],
-		'owcc':  ['-Wl,option stack=512k', '-fvisibility=hidden']
+		'owcc':  ['-Wl,option stack=512k']
 	},
 	'sanitize': {
 		'clang': ['-fsanitize=undefined', '-fsanitize=address'],
@@ -48,41 +47,41 @@ LINKFLAGS = {
 CFLAGS = {
 	'common': {
 		# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-		'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-'],
-		'clang':   ['-fno-strict-aliasing', '-fvisibility=hidden'],
-		'gcc':     ['-fno-strict-aliasing', '-fvisibility=hidden'],
+		'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
+		'clang':   ['-g0', '-fno-strict-aliasing', '-gdwarf-2', '-fvisibility=hidden'],
+		'gcc':     ['-g0', '-fno-strict-aliasing', '-fvisibility=hidden'],
 		'owcc':	   ['-fno-short-enum', '-ffloat-store', '-g0']
 	},
 	'fast': {
-		'msvc':	   ['/O2', '/Oy', '/MT'],
+		'msvc':	   ['/O2', '/Oy'],
 		'gcc':	   ['-Ofast'],
 		'clang':   ['-Ofast'],
 		'default': ['-O3']
 	},
 	'fastnative': {
-		'msvc':    ['/O2', '/Oy', '/MT'],
-		'gcc':     ['-O2', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
-		'clang':   ['-O2', '-march=native'],
+		'msvc':    ['/O2', '/Oy'],
+		'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
+		'clang':   ['-Ofast', '-march=native'],
 		'default': ['-O3']
 	},
 	'release': {
-		'msvc':    ['/O2', '/MT'],
+		'msvc':    ['/O2'],
 		'owcc':    ['-O3', '-fomit-leaf-frame-pointer', '-fomit-frame-pointer', '-finline-functions', '-finline-limit=512'],
-		'default': ['-O2', '-funsafe-math-optimizations', '-ftree-vectorize', '-ffast-math']
+		'default': ['-O2', '-funsafe-math-optimizations', '-ftree-vectorize']
 	},
 	'debug': {
-		'msvc':    ['/Od', '/MTd'],
+		'msvc':    ['/Od'],
 		'owcc':    ['-g', '-O0', '-fno-omit-frame-pointer', '-funwind-tables', '-fno-omit-leaf-frame-pointer'],
-		'default': ['-g', '-O0'] #, '-ftree-vectorize', '-ffast-math']
+		'default': ['-g', '-O0'] #, '-ftree-vectorize', '-ffast-math', '-fno-tree-partial-pre']
 	},
 	'sanitize': {
-		'msvc':    ['/Od', '/RTC1', '/MT'],
+		'msvc':    ['/Od', '/RTC1'],
 		'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
 		'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
 		'default': ['-O0']
 	},
 	'nooptimize': {
-		'msvc':    ['/Od', '/MT'],
+		'msvc':    ['/Od'],
 		'default': ['-O0']
 	}
 }

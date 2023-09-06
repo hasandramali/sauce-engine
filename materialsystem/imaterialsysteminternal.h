@@ -31,9 +31,9 @@ public:
 	{
 		MEM_ALLOC_CREDIT_( "CMatCallQueue.m_Allocator" );
 #ifdef SWDS
-		m_Allocator.Init( 2*1024, 0, 0, 16 );
+		m_Allocator.Init( 2*1024, 0, 0, 4 );
 #else
-		m_Allocator.Init( IsX360() ? 2*1024*1024 : 8*1024*1024, 64*1024, 256*1024, 16 );
+		m_Allocator.Init( IsX360() ? 2*1024*1024 : 8*1024*1024, 64*1024, 256*1024, 4 );
 #endif
 		m_FunctorFactory.SetAllocator( &m_Allocator );
 		m_pHead = m_pTail = NULL;
@@ -215,7 +215,7 @@ public:
 	virtual CMatCallQueue *GetRenderCallQueue() = 0;
 
 	virtual void UnbindMaterial( IMaterial *pMaterial ) = 0;
-	virtual ThreadId_t GetRenderThreadId() const = 0 ;
+	virtual uint GetRenderThreadId() const = 0 ;
 
 	virtual IMaterialProxy	*DetermineProxyReplacements( IMaterial *pMaterial, KeyValues *pFallbackKeyValues ) = 0;
 };
