@@ -1820,9 +1820,6 @@ void Host_ShutdownServer( void )
 {
 	if ( !sv.IsActive() )
 		return;
-
-	master->ShutdownConnection();
-
 	
 	Host_AllowQueuedMaterialSystem( false );
 	// clear structures
