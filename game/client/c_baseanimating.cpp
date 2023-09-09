@@ -1285,7 +1285,7 @@ void C_BaseAnimating::DelayedInitModelEffects( void )
 							return;
 						}
 					}
-					#ifdef TF_CLIENT_DLL
+					/*#ifdef TF_CLIENT_DLL
 					// Halloween Hack for Sentry Rockets
 					if ( !V_strcmp( "sentry_rocket", pszParticleEffect ) )
 					{
@@ -1307,7 +1307,7 @@ void C_BaseAnimating::DelayedInitModelEffects( void )
 							pszParticleEffect = "halloween_rockettrail";
 						}
 					}
-					#endif
+					#endif*/
 					// Spawn the particle effect
 					ParticleProp()->Create( pszParticleEffect, (ParticleAttachment_t)iAttachType, iAttachment );
 				}

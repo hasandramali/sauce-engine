@@ -306,14 +306,14 @@ void CTeamControlPoint::HandleScoring( int iTeam )
 		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
 		if ( pMaster && !pMaster->WouldNewCPOwnerWinGame( this, iTeam ) )
 		{
-#ifdef TF_DLL
+/*#ifdef TF_DLL
 			if ( TeamplayRoundBasedRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 			{
 				CBroadcastRecipientFilter filter;
 				EmitSound( filter, entindex(), "Hud.EndRoundScored" );
 			}
 			else
-#endif
+#endif*/
 			{
 				CTeamRecipientFilter filter( iTeam );
 				EmitSound( filter, entindex(), "Hud.EndRoundScored" );

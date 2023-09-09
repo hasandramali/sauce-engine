@@ -676,7 +676,7 @@ void CTeamControlPointMaster::CheckWinConditions( void )
 		{
 			bool bWinner = true;
 
-#if defined( TF_DLL)
+/*#if defined( TF_DLL)
 			if ( TFGameRules() && TFGameRules()->IsInKothMode() )
 			{
 				CTeamRoundTimer *pTimer = NULL;
@@ -697,7 +697,7 @@ void CTeamControlPointMaster::CheckWinConditions( void )
 					}
 				}
 			}
-#endif
+#endif*/
 			if ( bWinner )
 			{
 				TeamplayGameRules()->SetWinningTeam( iWinners, WINREASON_ALL_POINTS_CAPTURED, true, m_bSwitchTeamsOnWin );

@@ -457,13 +457,13 @@ void CSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
 {
 	KeyValues *pConditions = NULL;
 
-#ifdef TF_CLIENT_DLL
+/*#ifdef TF_CLIENT_DLL
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 	{
 		pConditions = new KeyValues( "conditions" );
 		AddSubKeyNamed( pConditions, "if_mvm" );
 	}
-#endif
+#endif*/
 
 	LoadControlSettings( GetResFile(), NULL, NULL, pConditions );
 

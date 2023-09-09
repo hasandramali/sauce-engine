@@ -18,7 +18,6 @@
 
 #if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
 #include "tf_shareddefs.h"
-#include "tf_classdata.h"
 #endif
 
 // NVNT haptic utils
@@ -292,7 +291,7 @@ public:
 			{
 				soundemitterbase->AddSoundOverrides( "scripts/game_sounds_vo_mvm_mighty.txt", true );
 			}
-			g_pTFPlayerClassDataMgr->AddAdditionalPlayerDeathSounds();
+			//g_pTFPlayerClassDataMgr->AddAdditionalPlayerDeathSounds();
 		}
 		else
 		{

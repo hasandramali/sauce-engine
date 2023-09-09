@@ -903,7 +903,6 @@ C_BaseEntity::C_BaseEntity() :
 
 	m_DataChangeEventRef = -1;
 	m_EntClientFlags = 0;
-	m_bEnableRenderingClipPlane = false;
 
 	m_iParentAttachment = 0;
 	m_nRenderFXBlend = 255;
@@ -941,12 +940,10 @@ C_BaseEntity::C_BaseEntity() :
 #if !defined( NO_ENTITY_PREDICTION )
 	m_pPredictionContext = NULL;
 #endif
+	
 	//NOTE: not virtual! we are in the constructor!
 	C_BaseEntity::Clear();
-
-	SetModelName( NULL_STRING );
-	m_iClassname = NULL_STRING;
-
+	
 	m_InterpolationListEntry = 0xFFFF;
 	m_TeleportListEntry = 0xFFFF;
 
@@ -987,6 +984,7 @@ C_BaseEntity::~C_BaseEntity()
 void C_BaseEntity::Clear( void )
 {
 	m_bDormant = true;
+
 	m_nCreationTick = -1;
 	m_RefEHandle.Term();
 	m_ModelInstance = MODEL_INSTANCE_INVALID;
@@ -1000,7 +998,6 @@ void C_BaseEntity::Clear( void )
 	SetLocalOrigin( vec3_origin );
 	SetLocalAngles( vec3_angle );
 	model = NULL;
-	m_pOriginalData = NULL;
 	m_vecAbsOrigin.Init();
 	m_angAbsRotation.Init();
 	m_vecVelocity.Init();
@@ -3744,7 +3741,7 @@ void C_BaseEntity::AddColoredDecal( const Vector& rayStart, const Vector& rayEnd
 
 	case mod_brush:
 		{
-			color32 cColor32 = { (uint8)cColor.r(), (uint8)cColor.g(), (uint8)cColor.b(), (uint8)cColor.a() };
+			color32 cColor32 = { cColor.r(), cColor.g(), cColor.b(), cColor.a() };
 			effects->DecalColorShoot( decalIndex, index, model, GetAbsOrigin(), GetAbsAngles(), decalCenter, 0, 0, cColor32 );
 		}
 		break;

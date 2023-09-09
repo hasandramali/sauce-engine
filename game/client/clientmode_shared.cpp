@@ -57,15 +57,6 @@ extern IClientReplayContext *g_pClientReplayContext;
 extern ConVar replay_rendersetting_renderglow;
 #endif
 
-#if defined USES_ECON_ITEMS
-#include "econ_item_view.h"
-#endif
-
-#if defined( TF_CLIENT_DLL )
-#include "c_tf_player.h"
-#include "econ_item_description.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1193,7 +1184,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 		}
 	}
-#if defined( TF_CLIENT_DLL )
+/*#if defined( TF_CLIENT_DLL )
 	else if ( Q_strcmp( "item_found", eventname ) == 0 )
 	{
 		int iPlayerIndex = event->GetInt( "player" );
@@ -1235,7 +1226,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 
 				// TODO: Update the localization strings to only have two format parameters since that's all we need.
 				wchar_t wszLocalizedString[256];
-				g_pVGuiLocalize->ConstructString( wszLocalizedString, sizeof( wszLocalizedString ), wszItemFound, 3, wszPlayerName, CEconItemLocalizedFullNameGenerator( GLocalizationProvider(), pItemDefinition, iItemQuality ).GetFullName(), L"" );
+				//g_pVGuiLocalize->ConstructString( wszLocalizedString, sizeof( wszLocalizedString ), wszItemFound, 3, wszPlayerName, CEconItemLocalizedFullNameGenerator( GLocalizationProvider(), pItemDefinition, iItemQuality ).GetFullName(), L"" );
 
 				char szLocalized[256];
 				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalizedString, szLocalized, sizeof( szLocalized ) );
@@ -1244,7 +1235,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 		}		
 	}
-#endif
+#endif*/
 #if defined( REPLAY_ENABLED )
 	else if ( !V_strcmp( "replay_servererror", eventname ) )
 	{

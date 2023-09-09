@@ -1016,14 +1016,14 @@ void CBaseGameStats_Driver::CollectData( StatSendType_t sendType )
 	// add common data
 	pGamestatsData->m_bHaveData |= AddBaseDataForSend( pKV, sendType );
 	
-#if defined(STEAMWORKS_GAMESTATS_ACTIVE)
+/*#if defined(STEAMWORKS_GAMESTATS_ACTIVE)
 	// At the end of every map, clients submit their perfdata for the map
 	if ( sendType == STATSEND_LEVELSHUTDOWN && pGamestatsData && pGamestatsData->m_bHaveData )
 	{
 		GetSteamWorksSGameStatsUploader().AddClientPerfData( pGamestatsData->m_pKVData );
 	}
 	GetSteamWorksSGameStatsUploader().LevelShutdown();
-#endif
+#endif*/
 
 	// add game-specific data
 	pGamestatsData->m_bHaveData |= gamestats->AddDataForSend( pKV, sendType );

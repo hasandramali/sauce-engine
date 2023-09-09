@@ -1,5 +1,2 @@
-#!/bin/sh
-
-# example: ./build.sh everything togl
-
-make MAKE_VERBOSE=1 NO_CHROOT=1 -f $1.mak $2 -j$(nproc --all)
+./waf configure -T release --android=armeabi-v7a-hard,4.9,21 --build-game=tf --togles --disable-warns
+./waf -j8

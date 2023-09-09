@@ -20,9 +20,6 @@
 #include "achievement_notification_panel.h"
 #include "c_playerresource.h"
 #include "gamestats.h"
-#ifdef TF_CLIENT_DLL
-#include "econ_item_inventory.h"
-#endif //TF_CLIENT_DLL
 #else
 #include "enginecallback.h"
 #endif // CLIENT_DLL
@@ -1093,7 +1090,7 @@ bool CAchievementMgr::CheckAchievementsEnabled()
 	//=============================================================================
 #endif // CSTRIKE_DLL	
 
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
+/*#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
 	// no achievements for now in training
 	if ( TFGameRules() && TFGameRules()->IsInTraining() && TFGameRules()->AllowTrainingAchievements() == false )
 	{
@@ -1106,7 +1103,7 @@ bool CAchievementMgr::CheckAchievementsEnabled()
 	{
 		return false;
 	}
-#endif
+#endif*/
 
 #if DEBUG_ACHIEVEMENTS_IN_RELEASE
 	return true;

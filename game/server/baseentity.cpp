@@ -1561,12 +1561,6 @@ int CBaseEntity::VPhysicsTakeDamage( const CTakeDamageInfo &info )
 		// damage type to DMG_GENERIC, or | DMG_CRUSH if you need to preserve the damage type for purposes of HUD display.
 #if !defined( TF_DLL )
 		Assert( force != vec3_origin && offset != vec3_origin );
-#else
-		// this was spamming the console for Payload maps in TF (trigger_hurt entity on the front of the cart)
-		if ( !TFGameRules() || TFGameRules()->GetGameType() != TF_GAMETYPE_ESCORT )
-		{
-			Assert( force != vec3_origin && offset != vec3_origin );
-		}
 #endif
 
 		unsigned short gameFlags = VPhysicsGetObject()->GetGameFlags();

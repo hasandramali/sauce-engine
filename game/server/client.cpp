@@ -1138,7 +1138,7 @@ void CC_God_f (void)
 	if ( !pPlayer )
 		return;
 
-#ifdef TF_DLL
+/*#ifdef TF_DLL
    if ( TFGameRules() && ( TFGameRules()->IsPVEModeActive() == false ) )
    {
 	   if ( gpGlobals->deathmatch )
@@ -1147,7 +1147,7 @@ void CC_God_f (void)
 #else
 	if ( gpGlobals->deathmatch )
 		return;
-#endif
+#endif*/
 
 	pPlayer->ToggleFlag( FL_GODMODE );
 	if (!(pPlayer->GetFlags() & FL_GODMODE ) )

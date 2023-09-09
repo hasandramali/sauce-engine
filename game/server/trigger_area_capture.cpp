@@ -1225,8 +1225,8 @@ void CTriggerAreaCapture::SetNumCappers( int nNumCappers, bool bBlocked /* = fal
 
 	m_OnNumCappersChanged2.Set( nNumCappers, this, this );
 
-	if ( m_hTrainWatcher.Get() )
+	/*if ( m_hTrainWatcher.Get() )
 	{
 		m_hTrainWatcher->SetNumTrainCappers( nNumCappers, this );
-	}
+	}*/
 }

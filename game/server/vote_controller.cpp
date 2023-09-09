@@ -693,13 +693,13 @@ bool CVoteController::IsValidVoter( CBasePlayer *pWhom )
 	if ( pWhom->IsReplay() )
 		return false;
 
-#ifdef TF_DLL
+/*#ifdef TF_DLL
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 	{
 		if ( pWhom->GetTeamNumber() != TF_TEAM_PVE_DEFENDERS )
 			return false;
 	}
-#endif // TF_DLL
+#endif // TF_DLL*/
 
 	return true;
 }

@@ -1751,13 +1751,13 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 			{
 				pShootThroughPortal = NULL;
 			}
-#elif TF_DLL
-			CTraceFilterIgnoreFriendlyCombatItems traceFilterCombatItem( this, COLLISION_GROUP_NONE, GetTeamNumber() );
+//#elif TF_DLL
+			/*CTraceFilterIgnoreFriendlyCombatItems traceFilterCombatItem( this, COLLISION_GROUP_NONE, GetTeamNumber() );
 			if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() )
 			{
 				CTraceFilterChain traceFilterChain( &traceFilter, &traceFilterCombatItem );
 				AI_TraceLine(info.m_vecSrc, vecEnd, MASK_SHOT, &traceFilterChain, &tr);
-			}
+			}*/
 			else
 			{
 				AI_TraceLine(info.m_vecSrc, vecEnd, MASK_SHOT, &traceFilter, &tr);
