@@ -14,7 +14,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories	".\hl2;.\hl2\elements;.\tf;.\tf\vgui;..\statemachine;$SRCDIR\game\shared\multiplayer;$SRCDIR\game\shared\tf;$BASE"
-		$PreprocessorDefinitions		"$BASE;TF_CLIENT_DLL"
+		$PreprocessorDefinitions		"$BASE;TF_CLIENT_DLL;NEXT_BOT"
 	}
 }
 
